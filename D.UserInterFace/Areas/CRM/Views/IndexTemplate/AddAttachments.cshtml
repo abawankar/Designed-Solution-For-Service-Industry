@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "AddAttachments";
+}
+
+
+@using (Html.BeginForm("UploadImage", "IndexTemplate", FormMethod.Post, new { id = "newtask", enctype = "multipart/form-data" }))
+{
+    <input type="hidden" value="@ViewBag.sampId" name="sampId" />
+    <table>
+        <tr>
+            <td>Select File as</td>
+            <td>
+                @Html.DropDownList("type",new SelectList((ViewBag.type) as SelectList,"Value","Text")) 
+            </td>
+        </tr>
+        <tr>
+           <td colspan="2"><input type="file" name="imageFile" /></td>
+        </tr>
+        <tr>
+            <td colspan="2"><input type="submit" value="Upload" /></td>
+        </tr>
+    </table>
+    
+    
+    
+}

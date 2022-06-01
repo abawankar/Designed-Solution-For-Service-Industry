@@ -1,0 +1,97 @@
+﻿@{
+    ViewBag.Title = "Job Profitablity";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.theme.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home")
+        @Html.DropDownList("branch", new SelectList((ViewBag.branch) as SelectList, "Value", "Text"), "Branch", new {@class="search-box" })
+        <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+            <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+        </button>
+
+        FileNumber : <div id="checkboxSelectCombo" style="position:fixed;padding-top:5px;"></div>
+
+    </div>
+    <div class="panel-body">
+        <div id="act" style="display:none;" class="table-responsive">
+            @{Html.RenderAction("GenrateReport");}
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#branch").change(function (e) {
+            var id = $('#branch').val();
+            e.preventDefault();
+            $.getJSON("/NBO/GetFileNumber?branch="+id, function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#checkboxSelectCombo").igCombo({
+                    width: "270px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+
+        $("#export").click(function (e) {
+            var nboid = $("#checkboxSelectCombo").igCombo("values");
+            var list = nboid.toString();
+            var branchid = $('#branch').val();
+            if (branchid = "") {
+                alert("Please select branch");
+                return;
+            }
+            var url = "JobProfitability/GenrateReport?list=" + list + "&branch=" + $('#branch').val();
+            window.open(url);
+        });
+
+        $("#filter").click(function (e) {
+            var nboid = $("#checkboxSelectCombo").igCombo("values");
+            var list = nboid.toString();
+            var branchid = $('#branch').val();
+            e.preventDefault();
+            var act = $('#act');
+            act.hide();
+            $('#loading').show();
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GenrateReport","JobProfitability")",
+                data: { list: list, branch: branchid },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+         });
+
+    });
+</script>

@@ -1,0 +1,111 @@
+﻿@{
+    ViewBag.Title = "Time & Cost Report (From ATM)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.DropDownList("Jobnumber", new SelectList((ViewBag.job) as SelectList, "Value", "Text"), "Job Number",new {@class="search-box" })
+        <input type="text" readonly="true" id="project" class="search-box" /> |
+        @Html.DropDownList("client", new SelectList((ViewBag.client) as SelectList, "Value", "Text"), "Client Name", new { @class = "search-box" }) |
+        <button type="button" id="Clear" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-refresh" aria-hidden="true"></span> Refresh
+        </button>
+    </div>
+    <div class="panel-heading">
+        Date From:<input type="date" id="dtFrom" class="search-box"/> To:<input type="date" id="dtTo" class="search-box" />
+        <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-gear" aria-hidden="true"></span> Generate
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+            <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+        </button>
+    </div>
+    <div class="panel-body">
+        <div id="act" style="display:none;">
+            @{Html.RenderAction("TimeAndCostReport");}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#Jobnumber").change(function (e) {
+            $('#project').val('');
+            var jobnumber = $('#Jobnumber').val();
+            e.preventDefault();
+            $.ajax({
+                type: 'get',
+                datatype: 'json',
+                cache: false,
+                async: false,
+                url: "@Url.Action("GetJobDetails","TaskManager")",
+                data: { jobnumber: jobnumber },
+                success: function (response) {
+                    $.each(response.results, function (i, item) {
+                        $('#project').val(item.Nature.Name)
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+
+        $("#Clear").click(function (e) {
+            $('#dtFrom').val('');
+            $('#dtTo').val('')
+            $('#Jobnumber').val('');
+            $('#client').val('');
+            $('#act').hide();
+        });
+
+        $("#export").click(function (e) {
+            var datefrom = $('#dtFrom').val();
+            var dateto = $('#dtTo').val()
+            var job = $('#Jobnumber').val();
+            var client = $('#client').val();
+
+            if (datefrom == "" && dateto == "" && job == "" && client == "") {
+                alert("Please select any of the options");
+                return;
+            }
+            var url = "ATMReport/ExportTimeAndCost?dateFrom=" + $('#dtFrom').val() + "&dateTo=" + $('#dtTo').val() + "&job=" + $('#Jobnumber').val() + "&client=" + $('#client').val();
+            window.open(url);
+
+        });
+
+        $("#filter").click(function (e) {
+            var datefrom = $('#dtFrom').val();
+            var dateto = $('#dtTo').val()
+            var job = $('#Jobnumber').val();
+            var client = $('#client').val();
+           
+            if (datefrom == "" && dateto == "" && job == "" && client == "") {
+                alert("Please select any of the options");
+                return;
+            }
+
+            e.preventDefault();
+            var act = $('#act');
+            act.hide();
+            $('#loading').show();
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("TimeAndCostReport","ATMReport")",
+                data: { job: job, client: client, dateFrom: datefrom, dateTo: dateto },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+               });
+    });
+</script>

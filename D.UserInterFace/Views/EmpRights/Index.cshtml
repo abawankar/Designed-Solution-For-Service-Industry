@@ -1,0 +1,93 @@
+﻿
+@{
+    ViewBag.Title = "Employee Rights";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input class="search-box" type="text" id="name" placeholder="Search.." />
+        <button id="search" type="button" class="btn btn-info btn-sm">
+            <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#table').jtable({
+            title: 'Applicaton Rights',
+            paging: true,
+            pagesize: 3,
+            sorting: true,
+            defaultSorting: 'Name ASC',
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Area: {
+                    title: 'Area',
+                    width: '12%'
+                },
+                MnuName: {
+                    title: 'MnuName',
+                    width: '12%'
+                },
+                Operation: {
+                    title: 'Operation',
+                    width: '12%'
+                },
+                Code: {
+                    title: 'Code',
+                    width: '12%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '12%'
+                },
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $("#search").click(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#name').val()
+            });
+        });
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+        });
+    });
+</script>
+
+

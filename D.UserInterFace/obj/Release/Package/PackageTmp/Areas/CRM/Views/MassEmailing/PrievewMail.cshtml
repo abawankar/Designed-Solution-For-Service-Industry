@@ -1,0 +1,50 @@
+﻿@model ViewUI.Models.CRM.EmailTemplateModel
+@{
+    ViewBag.Title = "Prievew Mail";
+}
+
+<style type="text/css">
+    .width
+    {
+        width:500px;
+        background-color:#fff;
+    }
+    .height
+    {
+        height:200px;
+    }
+</style>
+<table>
+    <tr>
+        <td>Subject:</td>
+        <td class="width">
+           @Model.Subject
+        </td>
+    </tr>
+    <tr>
+        <td>Attachment</td>
+        <td>
+            @if (Model.Attachment.Count == 0)
+            {
+                <label>No Attachments</label>  
+            }
+            @foreach (var item in Model.Attachment)
+            {
+                <a href="Upload/EmailAttachments/@item.FileOnServer">@item.FileName</a>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top;">Email Body</td>
+        <td>
+            <table >
+                <tr>
+                    <td class="width"> 
+                        @Html.Raw(Model.EmailBody)
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+     

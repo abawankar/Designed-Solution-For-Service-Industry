@@ -1,0 +1,259 @@
+﻿@{
+    ViewBag.Title = "TodayTask";
+}
+
+<div id="todayTask"></div>
+<div id="PendingTask"></div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('#todayTask').jtable({
+            title: 'Todays Activity',
+            async: false,
+            actions: {
+                listAction: '@Url.Action("CompletedList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Type: {
+                    title: 'Type',
+                    width: '2%',
+                    options: { 'Task': 'Task', 'Meeting': 'Meeting'},
+                },
+                Task: {
+                    title: 'Task',
+                    width: '8%',
+                    type: 'textarea'
+                },
+                Assigner: {
+                    title: 'Assigner',
+                    width: '2%',
+                    edit: false,
+                    display: function (data) {
+                        return data.record.Assigneer.EmpName
+                    }
+                },
+                Assignee: {
+                    title: 'Assignee',
+                    width:'2%',
+                    edit: false,
+                    display:function(data) {
+                        var emp = "";
+                        if (data.record.Contacts != null) {
+                            $.each(data.record.Contacts, function (data, record) {
+                                if (emp == "") {
+                                    emp = record.EmpName;
+                                }
+                                else {
+                                    emp = emp + "," + record.EmpName;
+                                }
+                               
+                            });
+                        }
+                        return emp;
+                    }
+                },
+                Start: {
+                    title: 'Start',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Start != null)
+                            return moment(data.record.Start).format("DD-MMM-YYYY")
+                    },
+                },
+                StartTime: {
+                    title: 'Time',
+                    width: '2%',
+                    list: true
+                },
+                Due: {
+                    title: 'Due',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Due != null)
+                            return moment(data.record.Due).format('DD-MMM-YYYY')
+                    },
+                },
+                DueTime: {
+                    title: 'Time',
+                    width: '2%',
+                    list: true
+                },
+                Status: {
+                    title: 'Status',
+                    width: '2%',
+                    options: { '1': 'Start', '2': 'Cancelled', '3': 'Completed' },
+                    display: function (data) {
+                        if (data.record.Status == 1)
+                            return "<div class='proposal'>" + "Start" + "</div>";
+                        if (data.record.Status == 2)
+                            return "<div class='inactive'>" + 'Cancelled' + "</div>";
+                        if (data.record.Status == 3)
+                            return "<div class='activeY'>" + 'Completed' + "</div>";
+                    }
+                },
+                CompletePercentage: {
+                    title: '%Compl',
+                    width: '0.5%',
+                    display: function (data) {
+                        if (data.record.CompletePercentage == "100%")
+                            return "<div class='activeY'>" + "100%" + "</div>";
+                        else
+                            return "<div class='proposal'>" + data.record.CompletePercentage + "</div>";
+                    }
+                }
+                
+            },
+            
+            formCreated: function (event, data) {
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#todayTask').jtable('load');
+    });
+</script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('#PendingTask').jtable({
+            title: 'Pending Activity',
+            async: true,
+            actions: {
+                listAction: '@Url.Action("PendingList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Type: {
+                    title: 'Type',
+                    width: '2%',
+                    options: { 'Task': 'Task', 'Meeting': 'Meeting' },
+                },
+                Task: {
+                    title: 'Task',
+                    width: '8%',
+                    type: 'textarea'
+                },
+                Assigner: {
+                    title: 'Assigner',
+                    width: '2%',
+                    edit: false,
+                    display: function (data) {
+                        return data.record.Assigneer.EmpName
+                    }
+                },
+                Assignee: {
+                    title: 'Assignee',
+                    width: '2%',
+                    edit: false,
+                    display: function (data) {
+                        var emp = "";
+                        if (data.record.Contacts != null) {
+                            $.each(data.record.Contacts, function (data, record) {
+                                if (emp == "") {
+                                    emp = record.EmpName;
+                                }
+                                else {
+                                    emp = emp + "," + record.EmpName;
+                                }
+
+                            });
+                        }
+                        return emp;
+                    }
+                },
+                Start: {
+                    title: 'Start',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Start != null)
+                            return moment(data.record.Start).format('DD-MMM-YYYY')
+                    },
+                },
+                StartTime: {
+                    title: 'Time',
+                    width: '2%',
+                    list: true
+                },
+                Due: {
+                    title: 'Due',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Due != null)
+                            return moment(data.record.Due).format('DD-MMM-YYYY')
+                    },
+                },
+                DueTime: {
+                    title: 'Time',
+                    width: '2%',
+                    list: true
+                },
+                Status: {
+                    title: 'Status',
+                    width: '2%',
+                    options: { '1': 'Start', '2': 'Cancelled', '3': 'Completed' },
+                    display: function (data) {
+                        if (data.record.Status == 1)
+                            return "<div class='proposal'>" + "Start" + "</div>";
+                        if (data.record.Status == 2)
+                            return "<div class='inactive'>" + 'Cancelled' + "</div>";
+                        if (data.record.Status == 3)
+                            return "<div class='activeY'>" + 'Completed' + "</div>";
+                    }
+                },
+                CompletePercentage: {
+                    title: '%Compl',
+                    width: '0.5%',
+                    display: function (data) {
+                        if (data.record.CompletePercentage == "100%")
+                            return "<div class='activeY'>" + "100%" + "</div>";
+                        else
+                            return "<div class='proposal'>" + data.record.CompletePercentage + "</div>";
+                    }
+                }
+
+            },
+
+            formCreated: function (event, data) {
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#PendingTask').jtable('load');
+
+    });
+</script>

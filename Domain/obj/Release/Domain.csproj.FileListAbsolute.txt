@@ -1,0 +1,33 @@
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\Domain.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\Domain.pdb
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\FluentNHibernate.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\Iesi.Collections.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\itextsharp.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Release\NHibernate.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\obj\Release\Domain.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\obj\Release\Domain.pdb
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\Domain.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\Domain.pdb
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\FluentNHibernate.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\Iesi.Collections.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\itextsharp.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\bin\Release\NHibernate.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\obj\Release\Domain.csprojResolveAssemblyReference.cache
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\obj\Release\Domain.dll
+C:\Project Backup\1001Events - 20 May\1001Events\Domain\obj\Release\Domain.pdb
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\Domain.dll
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\Domain.pdb
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\FluentNHibernate.dll
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\Iesi.Collections.dll
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\itextsharp.dll
+C:\Project Backup\1001Events\1001Events\Domain\bin\Release\NHibernate.dll
+C:\Project Backup\1001Events\1001Events\Domain\obj\Release\Domain.dll
+C:\Project Backup\1001Events\1001Events\Domain\obj\Release\Domain.pdb
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\Domain.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\Domain.pdb
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\FluentNHibernate.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\Iesi.Collections.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\itextsharp.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Release\NHibernate.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\obj\Release\Domain.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\obj\Release\Domain.pdb

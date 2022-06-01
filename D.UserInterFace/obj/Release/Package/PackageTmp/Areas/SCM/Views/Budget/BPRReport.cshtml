@@ -1,0 +1,219 @@
+﻿@model D.UserInterFace.Areas.SCM.Models.Report.BPRModel
+@{
+    ViewBag.Title = "BPRReport";
+}
+
+<div class="col-sm-6"><h3>Target Performance Report- <a href='javascript:window.print()'> <span class="fa fa-print"></span> Print</a></h3></div>
+@{
+    var data = from m in Model.Budget
+               from n in m.BudTrn.ToList()
+               select new {bmonth = n.BudgetMonth, year = m.Year, Month = n.Month, s = n.ContractValue, c = n.ContractCost, m = n.Margin};
+    var budget = from x in data.GroupBy(x => x.bmonth)
+                 select new { month = x.Key, s = x.Sum(s => s.s),c=x.Sum(c=>c.c),m=x.Sum(m=>m.m)};
+
+    //CONFIRMED,CONTRACTED,OPERATED,CLOSED
+    var confirm = from m in Model.NBO.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id==6 || x.Status.Id == 7).GroupBy(y => y.EventMonth)
+                  select new { month = m.Key, s = m.Sum(s => s.ContractValue), c = m.Sum(c => c.ContractCost), m = m.Sum(a => a.Margin)};
+
+    //Active and Potential
+    var active = from m in Model.NBO.Where(x => x.Status.Id == 2 || x.Status.Id == 3).GroupBy(y => y.EventMonth)
+                  select new { month = m.Key, s = m.Sum(s => s.ContractValue), c = m.Sum(c => c.ContractCost), m = m.Sum(a => a.Margin)};
+
+    //Inacative and Cancelled       
+    var cancelled = from m in Model.NBO.Where(x => x.Status.Id == 8 || x.Status.Id == 9).GroupBy(y => y.EventMonth)
+                  select new { month = m.Key, s = m.Sum(s => s.ContractValue), c = m.Sum(c => c.ContractCost), m = m.Sum(a => a.Margin)};
+
+    var query = from m in Model.month
+                join b in budget on m.Month equals b.month into mb
+                join c in confirm on m.Month equals c.month into cd
+                join l in cancelled on m.Month equals l.month into cl
+                join a in active on m.Month equals a.month into ac
+                from bbudget in mb.DefaultIfEmpty()
+                from sconfirm in cd.DefaultIfEmpty()
+                from scancelled in cl.DefaultIfEmpty()
+                from sactive in ac.DefaultIfEmpty()
+                select new { month = m.Month, 
+                             bs = (bbudget == null?0:bbudget.s),
+                             bc = (bbudget == null?0:bbudget.c),
+                             bm = (bbudget == null?0:bbudget.m),
+                             cs = (sconfirm == null ? 0 : sconfirm.s),
+                             cc = (sconfirm == null ? 0 : sconfirm.c),
+                             cm = (sconfirm == null ? 0 : sconfirm.m),
+                             ls = (scancelled == null ? 0 : scancelled.s),
+                             lc = (scancelled == null ? 0 : scancelled.c),
+                             lm = (scancelled == null ? 0 : scancelled.m),
+                             acs = (sactive == null ? 0 : sactive.s),
+                             acc = (sactive == null ? 0 : sactive.c),
+                             acm = (sactive == null ? 0 : sactive.m)
+                };
+               
+}
+<style type="text/css">
+    .th
+    {
+        text-align:right;
+        border:1px solid;
+        padding:4px;
+        color:#000000;
+    }
+    .tf
+    {
+        padding:2px;
+        border:1px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:center;
+        width:200px;
+    }
+    .lighblue
+    {
+        background-color:#96ceb4;
+        text-align:center;
+    }
+    .yellow
+    {
+        background-color:#ffeead;
+        text-align:center;
+    }
+    .green
+    {
+        background-color:#ff6f69;
+        text-align:center;
+    }
+    .lightred
+    {
+        background-color:#ffcc5c;
+        text-align:center;
+    }
+</style>
+<table>
+    <thead>
+        <tr><th class="th">@ViewBag.Year</th>
+            <th colspan="4" class="th lighblue" >Budget</th>
+            <th colspan="4" class="th yellow">Confirmed/Contracted/Operated/Closed</th>
+            <th colspan="4" class="th green">Active/Potential</th>
+            <th colspan="4" class="th lightred">InActive/Cancelled</th>
+        <tr>
+            <th class="tf">Month</th>
+            <th class="tf">S</th>
+            <th class="tf">C</th>
+            <th class="tf">M</th>
+            <th class="tf">P</th>
+
+            <th class="tf">S</th>
+            <th class="tf">C</th>
+            <th class="tf">M</th>
+            <th class="tf">P</th>
+
+            <th class="tf">S</th>
+            <th class="tf">C</th>
+            <th class="tf">M</th>
+            <th class="tf">P</th>
+
+            <th class="tf">S</th>
+            <th class="tf">C</th>
+            <th class="tf">M</th>
+            <th class="tf">P</th>
+        </tr>
+    </thead>
+    @{int i = 0;
+      double bmp =0;
+      double cmp = 0;
+      double acmp = 0;
+      double lmp = 0;
+      
+      string[] month = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };}
+    <tbody>
+            @foreach (var item in query)
+            {
+                <tr>
+                    <td class="th">@month[i]</td>
+                    <td class="th">@Convert.ToDouble(item.bs).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.bc).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.bm).ToString("##,##0")</td>
+                    <td class="th">
+                    @{
+                            if (item.bs != 0)
+                            {
+                                bmp = (Convert.ToDouble(item.bm) / Convert.ToDouble(item.bs)) * 100;
+                            }
+                            else
+                            {
+                                bmp = 0;
+                            }
+                     }
+                     @bmp.ToString("0.00")
+                     </td>
+                    <td class="th">@Convert.ToDouble(item.cs).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.cc).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.cm).ToString("##,##0")</td>
+                    <td class="th">@{
+                            if (item.cm != 0)
+                            {
+                                cmp = (Convert.ToDouble(item.cm) / Convert.ToDouble(item.cs)) * 100;
+                            }
+                            else
+                            {
+                                cmp = 0;
+                            }
+                     }
+                     @cmp.ToString("0.00")
+                     </td>
+
+                    <td class="th">@Convert.ToDouble(item.acs).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.acc).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.acm).ToString("##,##0")</td>
+                    <td class="th">@{
+                            if (item.acs != 0)
+                            {
+                                acmp = (Convert.ToDouble(item.acm) / Convert.ToDouble(item.acs)) * 100;
+                            }
+                            else
+                            {
+                                acmp = 0;
+                            }
+                     }
+                     @acmp.ToString("0.00")
+                     </td>
+
+                    <td class="th">@Convert.ToDouble(item.ls).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.lc).ToString("##,##0")</td>
+                    <td class="th">@Convert.ToDouble(item.lm).ToString("##,##0")</td>
+                    <td class="th">@{
+                            if (item.ls != 0)
+                            {
+                                lmp = (Convert.ToDouble(item.lm) / Convert.ToDouble(item.ls)) * 100;
+                            }
+                            else
+                            {
+                                lmp = 0;
+                            }
+                     }
+                     @lmp.ToString("0.00")
+                     </td>
+                </tr>
+                i++;
+            }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td class="tf">Total</td>
+            <td class="tf">@Convert.ToDouble(budget.Sum(x=>x.s)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(budget.Sum(x=>x.c)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(budget.Sum(x=>x.m)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble((budget.Sum(x=>x.m)/budget.Sum(x=>x.s))*100).ToString("#.00")</td>
+            <td class="tf">@Convert.ToDouble(confirm.Sum(x=>x.s)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(confirm.Sum(x=>x.c)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(confirm.Sum(x=>x.m)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble((confirm.Sum(x=>x.m)/confirm.Sum(x=>x.s))*100).ToString("#.00")</td>
+            <td class="tf">@Convert.ToDouble(active.Sum(x=>x.s)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(active.Sum(x=>x.c)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(active.Sum(x=>x.m)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble((active.Sum(x=>x.m)/active.Sum(x=>x.s))*100).ToString("#.00")</td>
+            <td class="tf">@Convert.ToDouble(cancelled.Sum(x=>x.s)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(cancelled.Sum(x=>x.c)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble(cancelled.Sum(x=>x.m)).ToString("##,###")</td>
+            <td class="tf">@Convert.ToDouble((cancelled.Sum(x=>x.m)/cancelled.Sum(x=>x.s))*100).ToString("#.00")</td>
+        </tr>
+        </tfoot>
+</table>

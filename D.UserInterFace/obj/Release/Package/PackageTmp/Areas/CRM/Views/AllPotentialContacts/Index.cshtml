@@ -1,0 +1,150 @@
+﻿@{
+    ViewBag.Message = "Leads Contacts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+     .alphabet
+    {
+        margin-top:2px;
+        padding:5px;
+        border:1px solid #808080;
+        border-radius:2px;
+        cursor:pointer;
+        background-color:#ffffff;
+    }
+    .alphabet:hover
+    {
+        background-color:#ffd800;
+    }
+     .margin-top
+    {
+        margin-top:6px;
+    }
+    .float-right
+    {
+        float:right;
+    }
+</style>
+
+<script type="text/javascript">
+    function loadbyalpha(char) {
+        $("#Country").val('');
+        $('#contactTable').jtable('load', {
+            name: char
+        });
+    };
+</script>
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.DropDownList("Country", new SelectList((ViewBag.Country) as SelectList, "Value", "Text"), "All Country",new {@class="search-box" }) |
+        @Html.ActionLink("All Leads", "Index", "PotentialAccount")
+        <input type="text" id="search" class="search-box" placeholder="Search.." />
+
+        <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+
+    </div>
+    <div class="panel-heading">
+        @{
+            for (int i = 65; i <= 90; i++)
+            {
+                var l = "'" + Convert.ToChar(i).ToString() + "'";
+                <label onclick="loadbyalpha(@l)" class="alphabet">@Convert.ToChar(i).ToString()</label>
+            }
+            <label onclick="loadbyalpha(0)" class="alphabet">All</label>
+        }
+    </div>
+    <div class="panel-body">
+        <div id="contactTable"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    //---- Contact Table ------
+    $(document).ready(function () {
+        $('#contactTable').jtable({
+            title: 'Potential Contact List',
+            paging: true,
+            pagesize: 3,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick: false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ContactList")',
+            },
+             fields: {
+                 Id: {
+                     title: 'Id',
+                     width: '1%',
+                     key: true,
+                     create: false,
+                     edit: false,
+                     list: false
+                 },
+                 FirstName: {
+                     title: 'Contact Name',
+                     width: '10%'
+                 },
+                 Email: {
+                     title: 'Contact Email',
+                     width: '10%'
+                 },
+                 Country: {
+                     title: 'Country',
+                     width: '10%',
+                     display: function (data) {
+                         return data.record.Country.Name;
+                     },
+                 },
+                 AccountName: {
+                     title: 'Account Name',
+                     width: '10%'
+                 },
+             },
+             toolbar: {
+                 items: [{
+                     icon: '/Content/Images/excel.png',
+                     text: 'Export To Excel',
+                     click: function () {
+                         var r = confirm("Do you want to export?");
+                         if (r == true) {
+                             var url = "AllPotentialContacts/ExportData";
+                             window.open(url);
+                         }
+                     }
+                 }]
+             },
+             selectionChanged: function () {
+                 var $selecedRows = $('#contactTable').jtable('selectedRows');
+             }
+         });
+        $('#contactTable').jtable('load');
+
+
+        $("#Country").change(function (e) {
+            $("#contactid").val('');
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                countryid: $("#Country").val()
+            });
+        });
+        
+        $("#filter").click(function (e) {
+            $("#contactid").val('');
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                countryid: $("#Country").val(), name:$("#search").val()
+            });
+        });
+    });
+
+    // -------- End Mail Template
+
+</script>

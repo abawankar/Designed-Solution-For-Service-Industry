@@ -1,0 +1,132 @@
+﻿@{
+    ViewBag.Title = "RepresentationAnalysisIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.theme.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+
+        <div class="row">
+            <div class="col-sm-12">
+                @Html.ActionLink("Dashboard", "Index", "Home") |
+                Market: @Html.DropDownList("Market", new SelectList((ViewBag.Market) as SelectList, "Value", "Text"), "All",new {@class="search-box" })
+                Nature: @Html.DropDownList("Nature", new SelectList((ViewBag.Nature) as SelectList, "Value", "Text"), "All", new { @class = "search-box" })
+                Representation : <div id="checkboxSelectCombo" style="position:fixed;padding-top:5px;"></div>
+            </div>
+            <div class="col-sm-12 topmar-10">
+                Date Of Request-From:<input type="date" id="dateFrom" class="search-box" />To:<input type="date" id="dateTo" class="search-box" />
+                <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+                    <span class="fa fa-filter" aria-hidden="true"></span> Filter
+                    <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+                </button>
+                <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+                    <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div id="act" style="display:none;" class="table-responsive">
+            @{Html.RenderAction("RepresentationAnalysis");}
+        </div>
+    </div>
+</div>
+
+<div id="loading" style="display:none;">Loading....</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $(function () {
+            $.getJSON("/Client/GetRepresentation", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#checkboxSelectCombo").igCombo({
+                    width: "270px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+
+        $("#export").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val()
+
+            if (datefrom == "" || dateto == "") {
+                alert("Please select time period");
+                return;
+            }
+
+            var enquiry = $("#checkboxSelectCombo").igCombo("values");
+            var list = enquiry.toString();
+
+            var url = "ExportRepresentation?dateFrom=" + $('#dateFrom').val() + "&dateTo=" + $('#dateTo').val() + "&enquiry=" + list + "&country=" + $('#Market').val() + "&natid=" + $('#Nature').val();
+            window.open(url);
+        });
+        
+        $("#filter").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val()
+            var natid = $('#Nature').val();
+            var country = $('#Market').val();
+            var enquiry = $("#checkboxSelectCombo").igCombo("values");
+            var list = enquiry.toString();
+            
+            var today = getJsDateToday();
+            var days = getDateDiff(dateto, today, "days")
+
+            if (datefrom == "" || dateto == "") {
+                alert("Please select time period");
+                return;
+            }
+
+            var checkdate = getDateDiff(datefrom, dateto, "days")
+            if (checkdate < 0) {
+                alert("To date not less than from date");
+                return;
+            }
+
+            if (days < 0) {
+                alert("Please select To date earlier than current date");
+                return;
+            }
+
+            e.preventDefault();
+            var act = $('#act');
+            act.hide();
+            $('#loading').show();
+
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("RepresentationAnalysis","NBO")",
+                data: { natid: natid, dateFrom: datefrom, dateTo: dateto, enquiry: list, country: country },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+        });
+    });
+</script>
+

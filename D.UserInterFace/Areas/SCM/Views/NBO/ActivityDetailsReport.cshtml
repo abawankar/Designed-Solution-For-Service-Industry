@@ -1,0 +1,209 @@
+﻿@model ViewUI.Models.Report.NBOEventRequestModel
+@{
+    ViewBag.Title = "ActivityReport";
+}
+
+<style type="text/css">
+    .th
+    {
+        text-align:center;
+        border:1px solid;
+        padding:4px;
+        color:#fff;
+        background-color:#a7a2a2;
+    }
+    .tb
+    {
+        text-align:right;
+        border:1px solid #fff;
+        padding:2px;
+        color:#000000;
+    }
+    .tf
+    {
+        padding:4px;
+        border:2px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:center;
+    }
+</style>
+
+
+@{
+    string[] month = { "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    var details = from n in Model.Request
+                  group n by n.RequestMonth into g
+                  select new
+                  {
+                      Month = 1 +"-" + g.Key.Substring(0,2)+ "-" + g.Key.Substring(2,4),
+                      //Active/Potantial
+                      ActiveValue = g.Where(x => x.Status.Id == 2 || x.Status.Id == 3).Sum(x => x.ContractValue),
+                      ActiveFiles = g.Where(x => x.Status.Id == 2 || x.Status.Id == 3).Count(),
+                      //Cancelled /Inactive
+                      CancelledValue = g.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Sum(x => x.ContractValue),
+                      CancelledFiles = g.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Count(),
+                      //Confirmed/Contracted/Operated/Closed
+                      ConfirmendValue = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Sum(x => x.ContractValue),
+                      ConfirmendFiles = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Count(),
+                      //Proposal Stage
+                      ProposalStage = g.Where(x => x.Status.Id == 1).Sum(x => x.ContractValue),
+                      ProposalFiles = g.Where(x => x.Status.Id == 1).Count(),
+                      //Total
+                      TotalFiles = g.Count(),
+                      TotalValue = g.Sum(x => x.ContractValue),
+                  };
+
+    var eventMonth = from n in Model.Event
+                  group n by n.EventMonth into g
+                  select new
+                  {
+                      Month = 1 + "-" + g.Key.Substring(0, 2) + "-" + g.Key.Substring(2, 4),
+                      //Active/Potantial
+                      ActiveValue = g.Where(x => x.Status.Id == 1 || x.Status.Id == 8).Sum(x => x.ContractValue),
+                      ActiveFiles = g.Where(x => x.Status.Id == 1 || x.Status.Id == 8).Count(),
+                      //Cancelled /Inactive
+                      CancelledValue = g.Where(x => x.Status.Id == 2 || x.Status.Id == 6).Sum(x => x.ContractValue),
+                      CancelledFiles = g.Where(x => x.Status.Id == 2 || x.Status.Id == 6).Count(),
+                      //Confirmed/Contracted/Operated/Closed
+                      ConfirmendValue = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 7 || x.Status.Id == 3).Sum(x => x.ContractValue),
+                      ConfirmendFiles = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 7 || x.Status.Id == 3).Count(),
+                      //Proposal Stage
+                      ProposalStage = g.Where(x => x.Status.Id == 9).Sum(x => x.ContractValue),
+                      ProposalFiles = g.Where(x => x.Status.Id == 9).Count(),
+                      //Total
+                      TotalFiles = g.Count(),
+                      TotalValue = g.Sum(x => x.ContractValue),
+                  };
+                  
+    }
+
+<div>
+
+    <div id="div2">
+        <h3>Staff Activity Report - Request Month</h3>
+  <table>
+   <thead>
+       <tr>
+            <td rowspan="2" class="tf" style="background-color:#a7a2a2;">Month</td>
+            <td colspan="2" class="th" style="background-color:#ff6a00;">ProposalStage/InActive</td>
+            <td colspan="2" class="th" style="background-color:#ffd800">Active/Potantial</td>
+            <td colspan="2" class="th" style="background-color:#0aef2a">Confirmed/Contracted/Operated/Closed</td>
+            <td colspan="2" class="th" style="background-color:#7d0909;">Cancelled /InActive</td>
+            <td colspan="2" class="th" style="background-color:#9c076b;">Total</td>
+       </tr>
+
+        <tr>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            
+       </tr>
+   </thead>
+   
+    @foreach (var item in details.OrderBy(x=>Convert.ToDateTime(x.Month)))
+    {
+        <tr>
+            <td class="tb">@month[Convert.ToInt32(item.Month.Substring(2,2))]- @item.Month.Substring(7,2)</td>
+            <td class="tb">@item.ProposalFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ProposalStage).ToString("##,##0")</td>
+            <td class="tb">@item.ActiveFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ActiveValue).ToString("##,##0")</td>
+            <td class="tb">@item.ConfirmendFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ConfirmendValue).ToString("##,##0")</td>
+            <td class="tb">@item.CancelledFiles</td>
+            <td class="tb">@Convert.ToDouble(item.CancelledValue).ToString("##,##0")</td>
+            <td class="tb">@item.TotalFiles</td>
+            <td class="tb">@Convert.ToDouble(item.TotalValue).ToString("##,##0")</td>
+        </tr>
+    }
+      <tr>
+           <td class="tf">TOTAL</td>
+           <td class="tf">@details.Sum(x=>x.ProposalFiles)</td>
+           <td class="tf">@Convert.ToDouble(details.Sum(x=>x.ProposalStage)).ToString("##,##0")</td>
+           <td class="tf">@details.Sum(x=>x.ActiveFiles)</td>
+           <td class="tf">@Convert.ToDouble(details.Sum(x=>x.ActiveValue)).ToString("##,##0")</td>
+           <td class="tf">@details.Sum(x=>x.ConfirmendFiles)</td>
+           <td class="tf">@Convert.ToDouble(details.Sum(x=>x.ConfirmendValue)).ToString("##,##0")</td>
+           <td class="tf">@details.Sum(x=>x.CancelledFiles)</td>
+           <td class="tf">@Convert.ToDouble(details.Sum(x=>x.CancelledValue)).ToString("##,##0")</td>
+           <td class="tf">@details.Sum(x=>x.TotalFiles)</td>
+           <td class="tf">@Convert.ToDouble(details.Sum(x=>x.TotalValue)).ToString("##,##0")</td>
+      </tr>
+</table>
+
+    </div>
+
+<div id="div1">
+    <h3>Staff Activity Report - Event Month</h3>
+    <table>
+   <thead>
+       <tr>
+            <td rowspan="2" class="tf" style="background-color:#a7a2a2;">Month</td>
+            <td colspan="2" class="th" style="background-color:#ff6a00;">ProposalStage/InActive</td>
+            <td colspan="2" class="th" style="background-color:#ffd800">Active/Potantial</td>
+            <td colspan="2" class="th" style="background-color:#0aef2a">Confirmed/Contracted/Operated/Closed</td>
+            <td colspan="2" class="th" style="background-color:#7d0909;">Cancelled /InActive</td>
+            <td colspan="2" class="th" style="background-color:#9c076b;">Total</td>
+       </tr>
+
+        <tr>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            <td class="tf">No.</td>
+            <td class="tf">Value</td>
+            
+       </tr>
+   </thead>
+        
+    @foreach (var item in eventMonth.OrderBy(x => Convert.ToDateTime(x.Month)))
+    {
+        <tr>
+            <td class="tb">@month[Convert.ToInt32(item.Month.Substring(2,2))]- @item.Month.Substring(7,2)</td>
+            <td class="tb">@item.ProposalFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ProposalStage).ToString("##,##0")</td>
+            <td class="tb">@item.ActiveFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ActiveValue).ToString("##,##0")</td>
+            <td class="tb">@item.ConfirmendFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ConfirmendValue).ToString("##,##0")</td>
+            <td class="tb">@item.CancelledFiles</td>
+            <td class="tb">@Convert.ToDouble(item.CancelledValue).ToString("##,##0")</td>
+            <td class="tb">@item.TotalFiles</td>
+            <td class="tb">@Convert.ToDouble(item.TotalValue).ToString("##,##0")</td>
+        </tr>
+    }
+      <tr>
+           <td class="tf">TOTAL</td>
+           <td class="tf">@eventMonth.Sum(x=>x.ProposalFiles)</td>
+           <td class="tf">@Convert.ToDouble(eventMonth.Sum(x=>x.ProposalStage)).ToString("##,##0")</td>
+           <td class="tf">@eventMonth.Sum(x=>x.ActiveFiles)</td>
+           <td class="tf">@Convert.ToDouble(eventMonth.Sum(x=>x.ActiveValue)).ToString("##,##0")</td>
+           <td class="tf">@details.Sum(x=>x.ConfirmendFiles)</td>
+           <td class="tf">@Convert.ToDouble(eventMonth.Sum(x=>x.ConfirmendValue)).ToString("##,##0")</td>
+           <td class="tf">@eventMonth.Sum(x=>x.CancelledFiles)</td>
+           <td class="tf">@Convert.ToDouble(eventMonth.Sum(x=>x.CancelledValue)).ToString("##,##0")</td>
+           <td class="tf">@eventMonth.Sum(x=>x.TotalFiles)</td>
+           <td class="tf">@Convert.ToDouble(eventMonth.Sum(x=>x.TotalValue)).ToString("##,##0")</td>
+      </tr>
+</table>
+</div>
+</div>
+
+
+
+
+
+

@@ -1,0 +1,104 @@
+﻿@{
+    ViewBag.Message = "Stay In Touch";
+}
+
+<div class="filtering">
+    @Html.ActionLink("Dashboard","Index","Home") | 
+    @Html.ActionLink("SIT","ContactList","OneStayInTouch")
+</div>
+
+<div id="table"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#table').jtable({
+            title: 'Stay In Touch',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                deleteAction: '@Url.Action("Delete")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'2%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Date: {
+                    title: 'Date',
+                    type: 'date',
+                    width: '10%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                TO: {
+                    title: 'To',
+                    width: '10%',
+                    display: function (data) {
+                        return data.record.Contact.FirstName + " " + data.record.Contact.LastName;
+                    }
+                },
+                Mail: {
+                    title: 'Mail',
+                    width: '10%',
+                    display: function (data) {
+                        return data.record.Contact.Email;
+                    }
+                },
+                City: {
+                    title: 'City',
+                    width: '10%',
+                    display: function (data) {
+                        return data.record.Contact.City;
+                    }
+                },
+                Country: {
+                    title: 'Country',
+                    width: '10%',
+                    display: function (data) {
+                        return data.record.Contact.Country.Name;
+                    }
+                },
+                Account: {
+                    title: 'Account',
+                    width: '10%',
+                    display: function (data) {
+                        return data.record.Contact.AccountName;
+                    }
+                },
+                CC: {
+                    title: 'CC',
+                    width: '10%'
+                },
+                BCC: {
+                    title: 'BCC',
+                    width: '10%',
+                },
+                Subject: {
+                    title: 'Subject',
+                    width: '10%'
+                },
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+   
+    });
+</script>

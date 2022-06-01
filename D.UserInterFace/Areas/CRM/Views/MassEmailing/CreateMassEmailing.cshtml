@@ -1,0 +1,599 @@
+﻿@{
+    ViewBag.Message = "New Mass Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="../../Content/bootstrap.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<script type="text/javascript">
+    //-------Display details of selected employee----------
+
+    function checkSubmit() {
+        var s = $('#salutation').val();
+        var name = $('#name').val();
+        var scdate = $("#scdate").val();
+
+        if (s != "" && name != "") {
+            $('#submit').prop('disabled', false);
+        }
+        else {
+            $('#submit').prop('disabled', true);
+        }
+    }
+    //-----------------------------------------------------
+</script>
+<style type="text/css">
+    .alphabet
+    {
+        margin-top:2px;
+        padding:5px;
+        border:1px solid #808080;
+        border-radius:2px;
+        cursor:pointer;
+        background-color:#ffffff;
+    }
+    .alphabet:hover
+    {
+        background-color:#ffd800;
+    }
+    .margin-top
+    {
+        margin-top:6px;
+    }
+    .button-pad
+    {
+        padding-bottom:2px;
+    }
+    .hidden
+    {
+        display:none;
+    }
+    .button
+    {
+        margin-bottom:5px;
+        padding:6px;
+    }
+    .padding
+    {
+        padding:5px;
+    }
+    .cancel
+    {
+        margin-left:20px;
+        border-radius:2px;
+    }
+   
+</style>
+
+<script type="text/javascript">
+    function inputKeyPress(e) {
+        e = e || window.event;
+        var key = e.keyCode;
+        if (key == 13) //Enter
+        {
+            return false; //return true to submit, false to do nothing
+        }
+    };
+   
+</script>
+
+@using (Html.BeginForm("Create", "MassEmailing", FormMethod.Post, new { id = "newtask", enctype = "multipart/form-data" }))
+{    
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><strong><label id="lblsteps1">Step1: Select a contact or contact group</label> </strong>
+                <strong class="float-right cancel">@Html.ActionLink(" Cancel","Index")</strong>
+                <strong class="float-right"><label id="lblsteps2">Step 1 of 3</label></strong>                
+            </div>
+            
+            <div class="panel-body" id="step1">
+                <div class="button">
+                    <button class="button-pad" id="st1" type="button" disabled>Next</button>               
+                </div>
+                 <div class="filtering">
+                    <input type="text" id="contactgp" placeholder="Contact Group" />
+
+                    <input type="text" id="actType" placeholder="Account Type" />
+                    <input type="text" id="accountCat" placeholder="Account Category" />
+                    <input type="text" id="account" placeholder="Account" />
+
+                     <input type="text" id="contType" placeholder="Contact Type" />
+                     <input type="text" id="country" placeholder="Country" />
+                     <input type="text" id="city" placeholder="City" />
+                 </div>
+                 <div class="filtering">
+                    <input type="hidden" id="contactlist" name="contactlist" />
+                    <input type="hidden" id="mailtime" name="mailtime" />
+                    <input title="Press enter to search" style="width:100px;" class="width" type="text" id="first" name="first" placeholder="First Name">
+                    <input title="Press enter to search" style="width:100px;" type="text" id="last" name="last" placeholder="Last Name">
+                    @Html.DropDownList("type",new SelectList((ViewBag.type) as SelectList,"Value","Text"),"Types") 
+                    <input type="button" id="search" value="Filter" />
+                    <input type="button" id="clear" value="Clear" />
+                </div>
+
+                <div id="contactTable"></div>
+            </div>
+
+            <div class="panel-body hidden" id="step2">
+                <div class="button">
+                    <input type="hidden" id="mailtemplist" name="mailtemplist" />
+                    <button class="button-pad" type="button" id="st11">Previous</button> 
+                    <button class="button-pad" type="button" id="st2" disabled>Next</button> 
+                </div>
+                
+                <div class="filtering">
+                    @Html.DropDownList("mailtemplate",new SelectList((ViewBag.mailtemplate) as SelectList,"Value","Text"),"All Mail Template") 
+                    <input style="width:150px;" onkeypress="return inputKeyPress(event)" type="text" id="desc" placeholder="Description" />
+                    <input style="width:150px;" onkeypress="return inputKeyPress(event)" type="text" id="sub" placeholder="Subject" />
+                    <button type="button" id="tmpFilter">Filter</button>
+                </div>
+                <div id="mailtable"></div>
+                <div id="dialog-edit" style="display: none"> </div>
+            </div>
+
+            <div class="panel-body hidden" id="step3">
+                <div class="button">
+                    <button class="button-pad" type="button" id="st22">Previous</button> 
+                    <button class="button-pad" type="submit" id="submit" disabled>Submit</button> 
+                </div>
+                <div class="filtering">
+
+                </div>
+                <div class="panel panel-info">
+                     <div class="panel-heading">Processing Options</div>
+                <div class="panel-body"> 
+                    <table>
+                        <tr>
+                            <td>BCC me on one message</td><td><input type="checkbox" name="chkbcc" checked value="true" id="chkBcc" /></td>
+                        </tr>
+                         <tr>
+                            <td>Salutation (Dear/Hi/Hello)</td><td><input type="text" id="salutation" name="salutation" /></td>
+                        </tr>
+                        <tr>
+                            <td>Reply To: </td><td><input type="text" id="ReplyTo" name="ReplyTo" /></td>
+                        </tr>
+                         <tr>
+                            <td>Mass Email Name</td><td><input type="text" id="name" name="name" /></td>
+                        </tr>
+                    </table>
+                </div>
+                </div>
+
+                <div class="panel panel-info">
+                     <div class="panel-heading">Delivery Options</div>
+                <div class="panel-body"> 
+                    <div>
+                        <input type="radio" name="issc" value="sendnow" id="sendnow" checked /> Send Now  <br />
+                        <input type="radio" name="issc" value="schedule" id="schedule" />Schedule for delivery on
+                        <input type="date" id="scdate" name="schedule" /> 
+                    </div>
+                    
+                </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+
+<script type="text/javascript">
+
+    var width = "300px"
+    $(function () {
+        $.getJSON("/AllContacts/GetCountry", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#country").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetCity", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#city").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Name",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactGroup", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contactgp").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactType", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contType").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccountType", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#actType").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccount", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#account").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccountCat", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#accountCat").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    //Dialog form
+    $("#dialog-edit").dialog({
+        title: 'Print Labels',
+        autoOpen: false,
+        resizable: false,
+        width: 780,
+        show: { effect: 'drop', direction: "up" },
+        modal: true,
+        draggable: true,
+        open: function (event, ui) {
+            $(".ui-dialog-titlebar-close").show();
+            $(this).load(url);
+        },
+        buttons: {
+            "Cancel": function () {
+                $(this).dialog("close");
+            },
+        }
+    });
+    //End dialog form
+
+    //---- Contact Table ------
+    $(document).ready(function () {
+        $('#contactTable').jtable({
+            title: 'Contact List',
+            paging: true,
+            pagesize: 3,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick: false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ContactList")',
+            },
+             fields: {
+                 Id: {
+                     title: 'Id',
+                     width: '1%',
+                     key: true,
+                     create: false,
+                     edit: false,
+                     list: false
+                 },
+                 FirstName: {
+                     title: 'First Name',
+                     width: '10%'
+                 },
+                 LastName: {
+                     title: 'Last Name',
+                     width: '10%'
+                 },
+                 Email: {
+                     title: 'Contact Email',
+                     width: '10%'
+                 },
+                 City: {
+                     title: 'City',
+                     width: '10%'
+                 },
+                 Country: {
+                     title: 'Country',
+                     width: '10%',
+                     display: function (data) {
+                         return data.record.Country.Name;
+                     },
+                 },
+                 AccountName: {
+                     title: 'Account Name',
+                     width: '10%'
+                 },
+             },
+             selectionChanged: function () {
+                 var $selecedRows = $('#contactTable').jtable('selectedRows');
+                 if ($selecedRows.length != 0) {
+                     $('#st1').prop('disabled', false);
+                 }
+                 else {
+                     $('#st1').prop('disabled', true);
+                 }
+             }
+         });
+
+        $("#search").click(function (e) {
+            var country = $("#country").igCombo("values");
+            var city = $("#city").igCombo("values");
+            var account = $("#account").igCombo("values");
+            var accountCat = $("#accountCat").igCombo("values");
+            var contType = $("#contType").igCombo("values");
+            var actType = $("#actType").igCombo("values");
+            var contgp = $("#contactgp").igCombo("values");
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                contType: contType.toString(), actType: actType.toString(), actCat: accountCat.toString(), type: $("#type").val(), contgp: contgp.toString(), ctryid: country.toString(), city: city.toString(), acname: account.toString(), first: $('#first').val(), last: $('#last').val()
+            });
+        });
+
+        $("#first").focus(function (e) {
+            $('#last').val('');
+            e.preventDefault();
+        });
+        $("#last").focus(function (e) {
+            $('#first').val('');
+            e.preventDefault();
+        });
+
+        $("#clear").click(function (e) {
+            e.preventDefault();
+            $("#contactgp").igCombo("selectedIndex", -1);
+            $('#type').val('');
+            $("#account").igCombo("selectedIndex", -1);
+            $("#accountCat").igCombo("selectedIndex", -1);
+            $("#actType").igCombo("selectedIndex", -1);
+            $("#contType").igCombo("selectedIndex", -1);
+            $("#country").igCombo("selectedIndex", -1);
+            $("#city").igCombo("selectedIndex", -1);
+            $("#first").val('');
+            $("#last").val('');
+            var id = 0;
+            var city = $('#city');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetCityByCountry","ContactGroup")",
+                data: { contid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">All City</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.City + "\">" + item.City + "</option>";
+                    });
+                    city.html("");
+                    city.html(items);
+                },
+                error: function () {
+                }
+            });
+
+         });
+
+
+        $("#st1").click(function (e) {
+            $("#step1").hide();
+            $("#step2").show();
+            document.getElementById('lblsteps1').innerHTML = 'Step2: Select an email template';
+            document.getElementById('lblsteps2').innerHTML = 'Step 2 of 3';
+        });
+
+        $("#st11").click(function (e) {
+            $("#step1").show();
+            $("#step2").hide();
+            document.getElementById('lblsteps1').innerHTML = 'Step1: Specity the receipents';
+            document.getElementById('lblsteps2').innerHTML = 'Step 1 of 3';
+        });
+
+        $("#st2").click(function (e) {
+            $("#step1").hide();
+            $("#step2").hide();
+            $("#step3").show();
+            document.getElementById('lblsteps1').innerHTML = 'Step3: Review and Confirm';
+            document.getElementById('lblsteps2').innerHTML = 'Step 3 of 3';
+        });
+
+        $("#st22").click(function (e) {
+            $("#step2").show();
+            $("#step3").hide();
+            document.getElementById('lblsteps1').innerHTML = 'Step2: Select an email template';
+            document.getElementById('lblsteps2').innerHTML = 'Step 2 of 3';
+        });
+
+        $("#submit").click(function (e) {
+            var $selecedRows = $('#contactTable').jtable('selectedRows');
+            var list = "1";
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+
+            var $selecedRows1 = $('#mailtable').jtable('selectedRows');
+            var list2 = "1";
+            $selecedRows1.each(function () {
+                var record1 = $(this).data('record');
+                list2 = list2 + "," + record1.Id;
+            });
+
+            $('#contactlist').val(list);
+            $('#mailtemplist').val(list2);
+
+            var chk = document.getElementsByName('issc');
+            var chk_value;
+            for (var i = 0; i < chk.length; i++) {
+                if (chk[i].checked) {
+                    chk_value = chk[i].value;
+                }
+            }
+            if (chk_value == "sendnow")
+                $("#mailtime").val("sendnow");
+            else {
+                $("#mailtime").val("schedule");
+                var date = $('#scdate').val();
+                if (date == "") {
+                    alert("Select Schedule Date!");
+                    return false;
+                    e.preventDefault();
+                }
+            }
+        });
+
+    });
+    // ------ Contact Table Ends --------
+
+    //---- Mail Template ----------
+    $('#mailtable').jtable({
+        title: 'Template',
+        paging: true,
+        pagesize: 3,
+        selecting: true,
+        multiselect: false,
+        selectOnRowClick: false,
+        selectingCheckboxes: true,
+        actions: {
+            listAction: '@Url.Action("MailTemplateList")',
+            },
+        fields: {
+            Id: {
+                title: 'Id',
+                width: '1%',
+                key: true,
+                create: false,
+                edit: false,
+                list: false
+            },
+            MailTempId: {
+                title: 'Prievew',
+                width: '1%',
+                display: function (data) {
+                    var $img = $('<a title="Prievew Mail Template" class="child-opener-image" href="#">Prievew</a>');
+                    $img.click(function () {
+                        url = $('@Html.ActionLink("testmail", "PrievewMail","MassEmailing")').attr('href');
+                            url = url + "?tempid=" + data.record.Id;
+                            $("#dialog-edit").dialog("option", "title", "Mail Prievew");
+                            $("#dialog-edit").dialog('open');
+                            return false;
+                        });
+                        return $img;
+                    }
+            },
+            TemplateName: {
+                title: 'TemplateName',
+                width: '10%'
+            },
+            Description: {
+                title: 'Description',
+                width: '10%'
+            },
+            Subject: {
+                title: 'Subject',
+                width: '10%'
+            },
+        },
+        selectionChanged: function () {
+            var $selecedRows = $('#mailtable').jtable('selectedRows');
+            if ($selecedRows.length != 0) {
+                $('#st2').prop('disabled', false);
+            }
+            else {
+                $('#st2').prop('disabled', true);
+            }
+        }
+    });
+    $('#mailtable').jtable('load');
+
+    $("#sub").focus(function (e) {
+        $('#desc').val('');
+        $("#mailtemplate").val('');
+        e.preventDefault();
+    });
+    $("#desc").focus(function (e) {
+        $('#sub').val('');
+        $("#mailtemplate").val('');
+        e.preventDefault();
+    });
+
+    $("#tmpFilter").click(function (e) {
+        e.preventDefault();
+        $('#mailtable').jtable('load', {
+            subj: $('#sub').val(), desc: $('#desc').val()
+        });
+    });
+
+    $("#salutation").change(function (e) {
+        checkSubmit();
+        e.preventDefault();
+        
+    });
+    $("#name").change(function (e) {
+        checkSubmit();
+        e.preventDefault();
+    });
+    $("#scdate").change(function (e) {
+        checkSubmit();
+        e.preventDefault();
+    });
+
+    $("#mailtemplate").change(function (e) {
+        $('#sub').val('');
+        $('#desc').val('');
+        e.preventDefault();
+        $('#mailtable').jtable('load', {
+            name: $("#mailtemplate").val()
+        });
+    });
+
+    // -------- End Mail Template
+
+</script>

@@ -1,0 +1,197 @@
+﻿@{
+    ViewBag.Title = "Duplicate";
+}
+
+@section styles{
+    <link href="../../Content/css/bootstrap.css" rel="stylesheet" />
+}
+
+ <div class="filtering">
+     @Html.ActionLink("Dashboard","Index","Home") |
+     @Html.ActionLink("Contacts","Index","AllContacts")
+ </div>
+
+ <div class="filtering">
+     Duplicate Contact @Html.DropDownList("duplicate",new SelectList((ViewBag.duplicate) as SelectList,"Value","Text"),"Select Contact") |
+     <button type="button" title="Select contact from Bound and Unbound Table" id="merge">Merge</button>
+ </div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Bound Contact</div>
+            <div class="panel-body">
+                 <div id="boundTable"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Unbound Contact</div>
+            <div class="panel-body">
+                <div id="unboundtable"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#boundTable').jtable({
+            title: 'Bound Contact',
+            paging: false,
+            pagesize: 3,
+            selecting: true,
+            selectOnRowClick: true,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("boundList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                FirstName: {
+                    title: 'FirstName',
+                    width: '5%'
+                },
+                LastName: {
+                    title: 'LastName',
+                    width: '5%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '5%'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '2%',
+                    options: '@Url.Action("GetCountryOptions","Country")'
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '5%',
+                    edit: false,
+                    create: false
+                },
+            },
+            selectionChanged: function () {
+                var $selecedRowsb = $('#boundTable').jtable('selectedRows');
+            }
+        });
+
+        $('#unboundtable').jtable({
+            title: 'Un Bound Contact',
+            paging: false,
+            pagesize: 3,
+            selecting: true,
+            selectOnRowClick: true,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("boundList")',
+                deleteAction: '@Url.Action("DeleteContact","NewAccount")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                FirstName: {
+                    title: 'FirstName',
+                    width: '5%'
+                },
+                LastName: {
+                    title: 'LastName',
+                    width: '5%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '5%'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '2%',
+                    options: '@Url.Action("GetCountryOptions","Country")'
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '5%',
+                    edit: false,
+                    create: false
+                },
+            },
+            selectionChanged: function () {
+                var $selecedRowsu = $('#unboundtable').jtable('selectedRows');
+            }
+        });
+
+        $("#duplicate").change(function (e) {
+            e.preventDefault();
+            $('#boundTable').jtable('load', {
+                mailid: $('#duplicate').val(), type:"b"
+            });
+            $('#unboundtable').jtable('load', {
+                mailid: $('#duplicate').val(), type: "u"
+            });
+        });
+
+        $('#merge').button().click(function () {
+            var $selecedRowsu = $('#unboundtable').jtable('selectedRows');
+            var $selecedRowsb = $('#boundTable').jtable('selectedRows');
+            var u = "0";
+            var b = "0";
+            $selecedRowsu.each(function () {
+                var record = $(this).data('record');
+                u = u + "," + record.Id;
+            });
+            $selecedRowsb.each(function () {
+                var record = $(this).data('record');
+                b = b + "," + record.Id;
+            });
+            var boundid = b.replace("0,", "");
+            var unboundid = u.replace("0,", "");
+
+            if (boundid == "0" || unboundid == "0") {
+                alert("Please select contact from bound and unbound table");
+                return;
+            }
+            
+            $.ajax({
+                url: '@Url.Action("MergeContact","AllContacts")',
+                type: 'POST',
+                datatype: 'HTML',
+                data: { bid:boundid,uid:unboundid },
+                success: function (data) {
+                    alert("Contact Merge");
+                    $('#boundTable').jtable('load', {
+                        mailid: $('#duplicate').val(), type: "b"
+                    });
+                    $('#unboundtable').jtable('load', {
+                        mailid: $('#duplicate').val(), type: "u"
+                    });
+                },
+                error: function () {
+
+                }
+            });
+        });
+
+       });
+</script>

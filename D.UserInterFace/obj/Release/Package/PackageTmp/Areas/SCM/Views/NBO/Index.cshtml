@@ -1,0 +1,742 @@
+﻿@{
+    ViewBag.Title = "New Business Opertunity";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+ <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/js/infragistics.theme.css" rel="stylesheet" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        
+
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+
+        @if (HttpContext.Current.User.IsInRole("Admin") || HttpContext.Current.User.IsInRole("Management"))
+        {
+            @Html.DropDownList("branch", new SelectList((ViewBag.branch) as SelectList, "Value", "Text"), "Branch", new { @class = "search-box" })
+        }
+        @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "File Handler", new { @class = "search-box" }) |
+        @Html.DropDownList("Nature", new SelectList((ViewBag.Nature) as SelectList, "Value", "Text"), "Nature", new { @class = "search-box" }) |
+
+        <input title="Press enter to search" type="text" id="find" style="width:100px;" placeholder="Find" class="search-box" />  |
+        Status: <input type="text" id="StatusId" style="padding:2px;position:fixed;width:100px;" class="search-box" />
+    </div>
+    
+    <div class="panel-heading">
+        <input title="Press enter to search" type="text" id="name" style="width:150px;" placeholder="File Number" class="search-box" /> |
+        <input title="Press enter to search" type="text" id="client" style="width:150px;" placeholder="Client Start With" class="search-box" /> |
+        <input title="Press enter to search" type="text" id="event" style="width:150px;" placeholder="Event Name Start With" class="search-box" /> |
+        <input title="Press enter to search" type="text" id="contact" style="width:150px;" placeholder="Contact Name Start With" class="search-box" /> |
+        @Html.DropDownList("source", new SelectList((ViewBag.source) as SelectList, "Value", "Text"), "Representation", new { @class = "search-box" })
+        <button type="button" id="filter" value="Filter" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+        </button>
+        <button type="button" id="refresh" value="Refresh" class="btn btn-info btn-sm">
+            <span class="fa fa-refresh" aria-hidden="true"></span> Refresh
+        </button>
+    </div>
+    <div class="panel-body">
+        <div id="table" class="table-responsive"></div>
+        <div id="dialog-edit" style="display: none"> </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 1020,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        $(function () {
+            $.getJSON("/EnquiryStatus/GetStatus", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#StatusId").igCombo({
+                    width: "200px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+        
+        $('#table').jtable({
+            title: 'New Business Opportunity',
+            paging: true,
+            useBootstrap: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                deleteAction: '@Url.Action("Delete")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                NatureId: {
+                    title: 'Nature',
+                    width: '1%',
+                    options: '@Url.Action("SelectNature","BusinessNature")',
+                },
+                RequestDate: {
+                    title: 'Request Date',
+                    type: 'date',
+                    width: '2%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return moment(data.record.RequestDate).format('DD-MMM-YYYY')
+                    },
+                },
+                FileNumber: {
+                    title: 'FileNumber',
+                    width: '1%'
+                },
+                BranchId: {
+                    title: 'Branch',
+                    width: '1%',
+                    options: '@Url.Action("SelectBranch","Company", new { area = string.Empty }, null)'
+                },
+                EmpId: {
+                    title: 'File Handler',
+                    width: '2%',
+                    dependsOn: 'BranchId',
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return '/Company/SelectNBOEmployee?branid=0';
+                        }
+                        return '/Company/SelectNBOEmployee?branid=' + data.dependedValues.BranchId;
+                    }
+                },
+                ClientId: {
+                    title: 'Client Name',
+                    width: '2%',
+                    options: '@Url.Action("SelectClientOptions","Client")'
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '2%',
+                    dependsOn: 'ClientId',
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return '/Country/SelectCountryOptions?clientId=0';
+                        }
+                        return '/Country/SelectCountryOptions?clientId=' + data.dependedValues.ClientId;
+                    }
+                },
+                ContactId: {
+                    title: 'Select Contact',
+                    width: '2%',
+                    dependsOn: 'ClientId',
+                    list: false,
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return 'NewAccount/GetContactByClientid?clientid=0';
+                        }
+                        return 'NewAccount/GetContactByClientid?clientid=' + data.dependedValues.ClientId;
+                    }
+                },
+                ContactName: {
+                    title: 'ContactName',
+                    width: '2%',
+                    list: true,
+                    input: function (data) {
+                        if (data.value != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="ContactName" value="' + data.value + '"/>';
+                        } else {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="ContactName" value="' + ""+ '"/>';
+                        }
+                    }
+                },
+                EmailId: {
+                    title: 'EmailId',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        if (data.value != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="EmailId" value="' + data.value + '"/>';
+                        } else {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="EmailId" value="' + "" + '"/>';
+                        }
+                    }
+                },
+                PhoneNo: {
+                    title: 'PhoneNo',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        if (data.value != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="PhoneNo" value="' + data.value + '"/>';
+                        } else {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="PhoneNo" value="' + "" + '"/>';
+                        }
+                    }
+                },
+                MobileNo: {
+                    title: 'MobileNo',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        if (data.value != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="MobileNo" value="' + data.value + '"/>';
+                        } else {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="MobileNo" value="' + "" + '"/>';
+                        }
+                    }
+                },
+                Fax: {
+                    title: 'Fax',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        if (data.value != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="Fax" value="' + data.value + '"/>';
+                        } else {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="Fax" value="' + "" + '"/>';
+                        }
+                    }
+                },
+                EventName: {
+                    title: 'EventName',
+                    width: '2%'
+                },
+                PaxNo: {
+                    title: 'No of Pax',
+                    width: '2%',
+                },
+                CheckinDate: {
+                    title: 'Check In',
+                    type: 'date',
+                    width: '3%',
+                    display: function (data) {
+                       return moment(data.record.CheckinDate).format('DD-MMM-YYYY')
+                    },
+                },
+                CheckOutDate: {
+                    title: 'Check Out',
+                    type: 'date',
+                    width: '3%',
+                    display: function (data) {
+                        return moment(data.record.CheckOutDate).format('DD-MMM-YYYY')
+                    },
+                },
+                EnqSourceId: {
+                    title: 'Representation',
+                    width: '2%',
+                    options: '@Url.Action("SelectEnqSourceOptions","EnquirySource")',
+                },
+                StatusId: {
+                    title: 'Status',
+                    width: '2%',
+                    options: '@Url.Action("SelectStatusOptions","EnquiryStatus")',
+                    display: function (data) {
+                        if (data.record.StatusId == 1)
+                            return "<div class='proposal'>" + "PROPOSAL STAGE" + "</div>";
+                        if (data.record.StatusId == 2)
+                            return "<div class='active'>" + 'ACTIVE' + "</div>";
+                        if (data.record.StatusId == 3)
+                            return "<div class='active'>" + 'POTENTIAL' + "</div>";
+                        if (data.record.StatusId == 4)
+                            return "<div class='confirmed'>" + 'CONFIRMED' + "</div>";
+                        if (data.record.StatusId == 5)
+                            return "<div class='confirmed'>" + 'CONTRACTED' + "</div>";
+                        if (data.record.StatusId == 6)
+                            return "<div class='confirmed'>" + 'OPERATED' + "</div>";
+                        if (data.record.StatusId == 7)
+                            return "<div class='confirmed'>" + 'CLOSED' + "</div>";
+                        if (data.record.StatusId == 8)
+                            return "<div class='cancelled'>" + 'INACTIVE' + "</div>";
+                        if (data.record.StatusId == 9)
+                            return "<div class='cancelled'>" + 'CANCELLED' + "</div>";
+                    }
+                },
+                EventName: {
+                    title: 'EventName',
+                    width: '2%',
+                },
+                PaxNo: {
+                    title: 'No of Pax',
+                    width: '2%',
+                },
+                ContractValue: {
+                    title: 'Contract Value',
+                    width: '2%',
+                    display: function (data) {
+                        return '<div style="text-align:right">' + data.record.ContractValue.toFixed(0) + '</div>';
+                    }
+                },
+                ContractCost: {
+                    title: 'Contract Costs',
+                    width: '2%',
+                    display: function (data) {
+                        return '<div style="text-align:right">' + data.record.ContractCost.toFixed(0) + '</div>';
+                    }
+                },
+                Margin: {
+                    title: 'Margin',
+                    width: '0.5%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<div style="text-align:right">' + data.record.Margin.toFixed(0) + '</div>';
+                    }
+                },
+                MarginP: {
+                    title: 'Margin%',
+                    width: '1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return '<div style="text-align:right">' + data.record.MarginP.toFixed(2) + '</div>';
+                    }
+                },
+                Remarks: {
+                    title: 'Remarks',
+                    width: '2%',
+                    type: 'textarea',
+                    list:false
+                },
+                //Child table for hotel
+                HotelDetails: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (file) {
+                        var $img = $('<img title="Hotel" class="child-opener-image" src="/Content/Images/hotel.png" width="22px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: file.record.FileNumber + " - Hotel Details",
+                                actions: {
+                                    listAction: '@Url.Action("ListHotel")?nboid=' + file.record.Id,
+                                    updateAction: '@Url.Action("EditHotel")',
+                                    deleteAction: '@Url.Action("DeleteHotel")',
+                                    createAction: '@Url.Action("AddHotel")?nboid=' + file.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    HotelName: {
+                                        title: 'Hotel Name',
+                                        width: '40%',
+                                        options: '@Url.Action("GetHotelName","Supplier")'
+                                    },
+                                    NumberOfNight: {
+                                        title: 'Total Nights',
+                                        width: '30%',
+                                    },
+                                    HotelBillingValue: {
+                                        title: 'Billing Value',
+                                        width: '30%',
+                                    },
+                                },
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                }, //End of hotel Child Table
+
+                //Child table for Comments
+                FileComments: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (file) {
+                        var $img = $('<img title="Comments" class="child-opener-image" src="/Content/Images/comment.png" width="22px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: file.record.FileNumber + " - Comments",
+                                actions: {
+                                    listAction: '@Url.Action("ListComments")?nboid=' + file.record.Id,
+                                    updateAction: '@Url.Action("EditComments")',
+                                    deleteAction:'@Url.Action("DeleteComments")',
+                                    createAction: '@Url.Action("AddComments")?nboid=' + file.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Date: {
+                                        title: 'Date',
+                                        type: 'date',
+                                        width: '4%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return moment(data.record.Date).format('DD-MMM-YYYY')
+                                        },
+
+                                    },
+                                    Comments: {
+                                        title: 'Comments',
+                                        type: 'textarea',
+                                        width: '40%',
+                                    },
+                                    UserName: {
+                                        title: 'User',
+                                        width: '1%',
+                                        edit: false,
+                                        create: false
+                                    }
+                                },
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                }, //End of Comments Child Table
+                Finance: {
+                    title: '',
+                    width: '0.1%',
+                    edit: false,
+                    create:false,
+                    display: function (data) {
+                        var $img = $('<img title="Finance" class="child-opener-image" src="/Content/Images/Finance.png" width=22 />');
+                        $img.click(function () {
+                            if (data.record.StatusId != 1) {
+                                url = $('@Html.ActionLink("Finance","Finance")').attr('href');
+                                url = url + "?id=" + data.record.Id + "&file=" + data.record.FileNumber;
+                                $("#dialog-edit").dialog("option", "title", "File Number: " + data.record.FileNumber + " Receivable and Payable Data " );
+                                $("#dialog-edit").dialog('open');
+                            }
+                            return false;
+                        });
+                        return $img;
+                    }
+                }
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "NBO/ExportData";
+                            window.open(url);
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="FileNumber"]').addClass('validate[required]');
+                data.form.find('input[name="ContactName"]').addClass('validate[required]');
+                data.form.find('input[name="CheckinDate"]').addClass('validate[required,custom[date]]');
+                data.form.find('input[name="CheckOutDate"]').addClass('validate[required,custom[date]]');
+                data.form.find('input[name="PaxNo"]').addClass('validate[required]');
+                data.form.find('input[name="ContractValue"]').css({ 'background-color': '#F7F53B' });
+                data.form.find('input[name="ContractCost"]').css({ 'background-color': '#F7F53B' });
+
+                $("#Edit-CheckinDate").removeClass('hasDatepicker');
+                $("#Edit-CheckinDate").datepicker({ changeMonth: true, changeYear: true, dateFormat: 'yy-mm-dd' });
+
+                $("#Edit-CheckOutDate").removeClass('hasDatepicker');
+                $("#Edit-CheckOutDate").datepicker({ changeMonth: true, changeYear: true, dateFormat: 'yy-mm-dd' });
+
+                var id = data.form.find('select[name="ContactId"]').val();
+                $.ajax({
+                    type: 'POST',
+                    datatype: 'JSON',
+                    url: "@Url.Action("GetContactInfo","AllContacts")",
+                        data: { contactid: id },
+                        success: function (data) {
+                            $.each(data.Result, function (i, item) {
+                                var ph1 = item.Phone == null ? "" : item.Phone;
+                                var ph2 = item.PhoneDirect == null ? "" : item.PhoneDirect;
+                                var phoneno1 = ph1.replace("null", "") + " / " + ph2.replace("null", "");
+                                $("#Edit-ContactName").val(item.FirstName + " " + item.LastName);
+                                $("#Edit-EmailId").val(item.Email);
+                                $("#Edit-PhoneNo").val(phoneno1);
+                                $("#Edit-MobileNo").val(item.Mobile);
+                                $("#Edit-Fax").val(item.Fax);
+                            });
+                        },
+                        error: function () {
+                        }
+                    });
+
+
+                data.form.find('select[name="ContactId"]').change(function (e) {
+                    var id = data.form.find('select[name="ContactId"]').val();
+                    $("#Edit-ContactName").val('');
+                    $("#Edit-EmailId").val('');
+                    $("#Edit-PhoneNo").val('');
+                    $("#Edit-MobileNo").val('');
+                    $("#Edit-Fax").val('');
+                    $.ajax({
+                        type: 'POST',
+                        datatype: 'JSON',
+                        url: "@Url.Action("GetContactInfo","AllContacts")",
+                            data: { contactid: id },
+                            success: function (data) {
+                                $.each(data.Result, function (i, item) {
+                                    var ph1 = item.Phone==null?"":item.Phone;
+                                    var ph2 = item.PhoneDirect==null?"":item.PhoneDirect;
+                                    var phoneno1 = ph1.replace("null", "") + " / " + ph2.replace("null", "");
+                                    $("#Edit-ContactName").val(item.FirstName + " " + item.LastName);
+                                    $("#Edit-EmailId").val(item.Email);
+                                    $("#Edit-PhoneNo").val(phoneno1);
+                                    $("#Edit-MobileNo").val(item.Mobile);
+                                    $("#Edit-Fax").val(item.Fax);
+                                });
+                            },
+                            error: function () {
+                            }
+                        });
+
+                 });
+
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                var nature = $("#Edit-NatureId").val();
+                var branch = $("#Edit-BranchId").val();
+                var emp = $("#Edit-EmpId").val();
+                var client = $("#Edit-ClientId").val();
+                var contact = $("#Edit-ContactId").val();
+                var count = $("#Edit-CountryId").val();
+                var enq = $("#Edit-EnqSourceId").val();
+                var status = $("#Edit-StatusId").val();
+
+                if (nature == 0) {
+                    alert("Select Nature");
+                    e.preventDefault();
+                    return;
+                }
+
+                if (branch == 0) {
+                    alert("Select Branch");
+                    e.preventDefault();
+                    return;
+                }
+
+                if (emp == 0) {
+                    alert("Select File Handler");
+                    e.preventDefault();
+                    return;
+                }
+                if (client == 0) {
+                    alert("Select Client");
+                    e.preventDefault();
+                    return;
+                }
+                if (contact == 0) {
+                    alert("Select Contact");
+                    e.preventDefault();
+                    return;
+                }
+
+                if (count == 0) {
+                    alert("Select Country");
+                    e.preventDefault();
+                    return;
+                }
+
+                if (enq == 0) {
+                    alert("Select Representation");
+                    e.preventDefault();
+                    return;
+                }
+
+                if (status == 0) {
+                    alert("Select Status");
+                    e.preventDefault();
+                    return;
+                }
+
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load', {col: 'top'});
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val(), col:'File'
+                });
+            }
+        });
+
+        $('#client').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#client').val(), col: 'client'
+                });
+            }
+        });
+
+        $('#event').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#event').val(), col: 'event'
+                });
+            }
+        });
+
+        $('#contact').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#contact').val(), col: 'contact'
+                });
+            }
+        });
+        $('#find').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#find').val(), col: 'find'
+                });
+            }
+        });
+
+
+        $("#refresh").click(function (e) {
+            $('#Status').val('');
+            $('#branch').val('');
+            $('#Emp').val('');
+            $('#source').val('');
+            $('#Nature').val('');
+            $('#client').val('');
+            $('#event').val('');
+            $('#contact').val('');
+            $('#name').val('');
+            $("#StatusId").igCombo("option", "selectedItems", [{ index: -1 }]);
+            e.preventDefault();
+            $('#table').jtable('load', { col: 'top' });
+        })
+
+        $("#Emp").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                empId: $('#Emp').val(), col: 'Emp'
+            });
+        });
+        $("#source").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                source: $('#source').val(), col: 'source'
+            });
+        });
+
+        $("#StatusId").igCombo({
+            dropDownClosed: function (evt, ui) {
+                var list = $("#StatusId").igCombo("values");
+                $('#table').jtable('load', {
+                    status: list.toString(), col: 'st'
+                });
+            }
+        });
+       
+        $("#Nature").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                nature: $('#Nature').val(), col: 'nature'
+            });
+        });
+
+        $("#filter").on('click', (function (e) {
+            var list = $("#StatusId").igCombo("values");
+            e.preventDefault();
+            $('#table').jtable('load', {
+                branch: $('#branch').val(), empId: $('#Emp').val(), status: list.toString(), nature: $('#Nature').val(),source:$('#source').val(), col: "filter"
+            });
+
+        }));
+
+
+        $("#export").click(function (e) {
+            var url = "NBO/ExportData";
+            window.open(url);
+        });
+
+        $("#branch").change(function (e) {
+            $('#Status').val('');
+            var id = $('#branch').val();
+            if (id == null || id == "") {
+                id = 0;
+            }
+            e.preventDefault();
+            var emp = $('#Emp');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetEmployeeNBO","Company")",
+                data: { branid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">File Handler</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.Id + "\">" + item.EmpName + "</option>";
+                    });
+                    emp.html("");
+                    emp.html(items);
+                    $('#table').jtable('load', {
+                        branch: $('#branch').val(), col: 'branch'
+                    });
+                },
+                error: function () {
+                }
+            });
+         });
+    });
+</script>

@@ -1,0 +1,126 @@
+﻿@model D.UserInterFace.Areas.SCM.Models.Report.NboCalendarModel
+@{
+    ViewBag.Title = "GenerateReport";
+}
+<style type="text/css">
+    table
+    {
+        border-collapse:collapse;
+    }
+table td {
+    border: 1px solid #989494;
+    color: #2c3168;
+    font-weight: normal;
+    background-color: #f9f6f6;
+    padding: 6px;
+    text-align:center;
+}
+table th, thead tr td {
+    border: 1px solid #989494;
+    color: #fff;
+    font-weight: bold;
+    background-color: #2b1971;
+    padding: 6px;
+}
+
+    .textright
+    {
+        text-align:right;
+    }
+
+    .textleft
+    {
+        text-align:left;
+    }
+
+    .width
+    {
+        width:70px;
+    }
+    .date
+    {
+        width:90px;
+    }
+
+</style>
+@{
+    var query = from n in Model.CurrentNBO
+                join b in Model.Incoming on n.Id equals b.nboid into mb
+                from incoming in mb.DefaultIfEmpty()
+                select new
+                {
+                    branch = n.Branch.Name,
+                    ClientName = n.ClientName.Name,
+                    EventName = n.EventName,
+                    Group = n.ContactName,
+                    PaxNo = n.PaxNo,
+                    Nature = n.Nature.Name,
+                    FileHandler = n.FileHandler.EmpName,
+                    Fileno = n.FileNumber,
+                    CheckinDate = n.CheckinDate,
+                    CheckOutDate = n.CheckOutDate,
+                    ContractValue = n.ContractValue,
+                    ContractCost = n.ContractCost,
+                    Margin = n.Margin,
+                    MarginP = n.MarginP,
+                    Received = incoming == null ? 0 : incoming.Received,
+                    Balance = incoming == null ? n.ContractValue : incoming.Balance
+                };
+}
+<div><h3>JobProfitability</h3></div>
+
+<table>
+    <thead>
+        <tr>
+            <td>Sr.No</td>
+            <td>File Ref#</td>
+            <td>File Handler</td>
+            <td>Clien Name</td>
+            <td>Event Name</td>
+            <td>Check In</td>
+            <td>Check Out</td>
+            <td>Pax</td>
+            <td>Contract Value</td>
+            <td>Total Cost</td>
+            <td>Margin</td>
+            <td>Margin %</td>
+            <td>Amount Received</td>
+            <td>Balance</td>
+        </tr>
+    </thead>
+
+    @{int i=1;}
+    @foreach (var item in query)
+    {
+        <tr>
+            <td>@i</td>
+            <td class="textleft">@item.Fileno</td>
+            <td class="textleft">@item.FileHandler</td>
+            <td class="textleft">@item.ClientName</td>
+            <td class="textleft">@item.EventName</td>
+            <td class="date">@Convert.ToDateTime(item.CheckinDate).ToString("dd MMM yyyy")</td>
+            <td class="date">@Convert.ToDateTime(item.CheckOutDate).ToString("dd MMM yyyy")</td>
+            <td>@item.PaxNo</td>
+            <td class="textright width">@Convert.ToDouble(item.ContractValue).ToString("##,##0")</td>
+            <td class="textright width">@Convert.ToDouble(item.ContractCost).ToString("##,##0")</td>
+            <td class="textright width">@Convert.ToDouble(item.Margin).ToString("##,##0")</td>
+            <td class="textright">@Convert.ToDouble(item.MarginP).ToString("#0.00")</td>
+            <td class="textright width">@Convert.ToDouble(item.Received).ToString("##,##0")</td>
+            <td class="textright width">@Convert.ToDouble(item.Balance).ToString("##,##0")</td>
+        </tr>
+        i++;
+    }
+    <tfoot>
+        <tr>
+            <td colspan="7">Total</td>
+            <td>@query.Sum(x=>x.PaxNo)</td>
+            <td class="textright">@Convert.ToDouble(query.Sum(x=>x.ContractValue)).ToString("##,##0")</td>
+            <td class="textright">@Convert.ToDouble(query.Sum(x=>x.ContractCost)).ToString("##,##0")</td>
+            <td class="textright">@Convert.ToDouble(query.Sum(x=>x.Margin)).ToString("##,##0")</td>
+            <td class="textright">@Convert.ToDouble(((query.Sum(x=>x.Margin)/query.Sum(x=>x.ContractValue))*100)).ToString("#0.00")</td>
+            <td class="textright">@Convert.ToDouble(query.Sum(x=>x.Received)).ToString("##,##0")</td>
+            <td class="textright">@Convert.ToDouble(query.Sum(x=>x.Balance)).ToString("##,##0")</td>
+
+        </tr>
+    </tfoot>
+</table>

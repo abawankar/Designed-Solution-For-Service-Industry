@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "EmpRightsList";
+}
+
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Employee: @Html.DropDownList("Employee", new SelectList((ViewBag.Employee) as SelectList, "Value", "Text"), new { @class = "search-box" })
+    </div>
+    <div class="panel-body">
+        <div id="rightsTable"></div>
+    </div>
+</div>
+<button role="button" id="EmpRights" title="Add Rights">
+    Add
+</button>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#rightsTable').jtable({
+            title: 'Employee Rights',
+            paging: true,
+            pagesize: 3,
+            sorting: true,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick:false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ListOfEmpRights")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                 Area: {
+                    title: 'Area',
+                    width: '12%'
+                },
+                MnuName: {
+                    title: 'MnuName',
+                    width: '12%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '12%'
+                },
+            },
+            selectionChanged: function () {
+                var $selecedRows = $('#rightsTable').jtable('selectedRows');
+                if ($selecedRows.length != 0) {
+                    $('#EmpRights').prop('disabled', false);
+                }
+                else {
+                    $('#EmpRights').prop('disabled', false);
+                }
+            }
+        });
+        $('#rightsTable').jtable('load', { id: $('#Employee').val() });
+
+        //Delete selected currencies
+        $('#EmpRights').button().click(function () {
+            var emp = $("#Employee").val();
+            var $selecedRows = $('#rightsTable').jtable('selectedRows');
+            var list = emp;
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+            $.ajax({
+                url: "@Url.Action("AddEmpRights", "Employee")",
+                type: 'POST',
+                datatype: 'HTML',
+                data: { id: emp, list: list },
+                success: function (data) {
+                    alert("Right Assigned");
+                    $('#rightsTable').jtable('load', {
+                        id: $('#Employee').val()
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+    });
+</script>

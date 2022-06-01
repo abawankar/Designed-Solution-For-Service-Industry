@@ -1,0 +1,193 @@
+﻿@{
+    ViewBag.message = "Mass Emailing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        Status: @Html.DropDownList("status", new SelectList((ViewBag.status) as SelectList, "Value", "Text"), "All",new {@class="search-box" })
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"> </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: 'Print Labels',
+            autoOpen: false,
+            resizable: false,
+            width: 780,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+
+        
+        $('#table').jtable({
+            title: 'Mass Email',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                deleteAction: '@Url.Action("Delete")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Name: {
+                    title: 'Name',
+                    width: '10%'
+                },
+                EmpId: {
+                    title: 'Owner',
+                    width: '10%',
+                    options: '@Url.Action("GetEmployeeList","Employee",new {area=string.Empty },null)'
+                },
+                MailTempId: {
+                    title: 'Mail Template',
+                    width: '10%',
+                    display: function (data) {
+                        var $img = $('<a title="Prievew Mail Template" class="child-opener-image" src="/Content/Images/mail.png" width=20>Prievew</a>');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("testmail", "PrievewMail","MassEmailing")').attr('href');
+                            url = url + "?tempid=" + data.record.MailTempId;
+                            $("#dialog-edit").dialog("option", "title", "Mail Prievew");
+                            $("#dialog-edit").dialog('open');
+                            return false;
+                        });
+                        return $img;
+                    }
+                },
+                Schedule: {
+                    title: 'Schedule Date',
+                    type: 'date',
+                    width: '10%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return moment(data.record.Schedule).format('DD-MMM-YYYY')
+                    },
+                },
+                Contact: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Contacts" class="child-opener-image" src="/Content/Images/usergroup.png" width="20px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: "Name : " + data.record.Name,
+                                paging: true,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("GetContactList")?id=' + data.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    FirstName: {
+                                        title: 'Contact Name',
+                                        width: '9%'
+                                    },
+                                    Email: {
+                                        title: 'Email',
+                                        width: '9%'
+                                    },
+                                    Country: {
+                                        title: 'Country',
+                                        width: '10%',
+                                        display: function (data) {
+                                            return data.record.Country.Name;
+                                        },
+                                    },
+                                    AccountName: {
+                                        title: 'Account Name',
+                                        width: '10%'
+                                    },
+
+                                },
+                     
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+                Status: {
+                    title: 'Status',
+                    width: '0.1%',
+                    display: function (data) {
+                        if (data.record.Status == 0)
+                            return "<div class='cancelled'>" + 'Pending' + "</div>";
+                        if (data.record.Status == 1)
+                            return "<div class='active'>" + 'Successful' + "</div>";
+                        if (data.record.Status == 2)
+                            return "<div class='cancelled'>" + 'Cancelled' + "</div>";
+                    }
+                },
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/add.png',
+                    text: 'Add New',
+                    click: function () {
+                        var url = "MassEmailing/CreateMassEmailing";
+                        window.location.href = url;
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+        $("#status").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#status').val()
+            });
+        });
+    });
+</script>

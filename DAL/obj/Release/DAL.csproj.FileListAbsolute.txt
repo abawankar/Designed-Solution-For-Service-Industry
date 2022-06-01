@@ -1,0 +1,40 @@
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\DAL.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\DAL.pdb
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\Domain.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\FluentNHibernate.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\Iesi.Collections.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\NHibernate.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\bin\Release\Domain.pdb
+D:\MY PROJECTS\1001Events\1001Events\DAL\obj\Release\DAL.csprojResolveAssemblyReference.cache
+D:\MY PROJECTS\1001Events\1001Events\DAL\obj\Release\DAL.dll
+D:\MY PROJECTS\1001Events\1001Events\DAL\obj\Release\DAL.pdb
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\DAL.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\DAL.pdb
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\Domain.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\FluentNHibernate.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\Iesi.Collections.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\NHibernate.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\bin\Release\Domain.pdb
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\obj\Release\DAL.csprojResolveAssemblyReference.cache
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\obj\Release\DAL.dll
+C:\Project Backup\1001Events - 20 May\1001Events\DAL\obj\Release\DAL.pdb
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\DAL.dll
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\DAL.pdb
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\Domain.dll
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\FluentNHibernate.dll
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\Iesi.Collections.dll
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\NHibernate.dll
+C:\Project Backup\1001Events\1001Events\DAL\bin\Release\Domain.pdb
+C:\Project Backup\1001Events\1001Events\DAL\obj\Release\DAL.csprojResolveAssemblyReference.cache
+C:\Project Backup\1001Events\1001Events\DAL\obj\Release\DAL.dll
+C:\Project Backup\1001Events\1001Events\DAL\obj\Release\DAL.pdb
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\DAL.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\DAL.pdb
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\Domain.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\FluentNHibernate.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\Iesi.Collections.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\NHibernate.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\bin\Release\Domain.pdb
+D:\MVC Project\SCM&ATM\D.SCM\DAL\obj\Release\DAL.csprojResolveAssemblyReference.cache
+D:\MVC Project\SCM&ATM\D.SCM\DAL\obj\Release\DAL.dll
+D:\MVC Project\SCM&ATM\D.SCM\DAL\obj\Release\DAL.pdb

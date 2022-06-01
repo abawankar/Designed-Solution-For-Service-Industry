@@ -1,0 +1,253 @@
+﻿@{
+    ViewBag.Title = "Contact List";
+}
+
+<div class="filtering">
+    Group Name: @Html.DropDownList("contactid",new SelectList((ViewBag.contactid) as SelectList,"Value","Text")) 
+    @Html.DropDownList("type",new SelectList((ViewBag.type) as SelectList,"Value","Text"),"Types") 
+    <input title="Press enter to search" style="width:100px;" class="width" type="text" id="first" name="first" placeholder="First Name">
+    <input title="Press enter to search" style="width:100px;" type="text" id="last" name="last" placeholder="Last Name">
+    <input type="button" id="search" value="Filter" />
+    <input type="button" id="clear" value="Clear" />
+</div>
+
+<div class="filtering">
+    <input type="text" id="actType" placeholder="Account Type" />
+    <input type="text" id="accountCat" placeholder="Account Category" />
+     <input type="text" id="account" placeholder="Account" />
+     <input type="text" id="contType" placeholder="Contact Type" />
+    <input type="text" id="country" placeholder="Country" />
+    <input type="text" id="city" placeholder="City" />
+</div>
+
+<div id="contactTable"></div>
+
+<button role="button" aria-disabled="false" id="contactGroup" title="Add Contacts" > 
+ Add
+</button>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var width = "300px"
+        $(function () {
+            $.getJSON("/AllContacts/GetCountry", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#country").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $(function () {
+            $.getJSON("/AllContacts/GetCity", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#city").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Name",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $(function () {
+            $.getJSON("/AllContacts/GetAccountType", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#actType").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $(function () {
+            $.getJSON("/AllContacts/GetAccount", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#account").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $(function () {
+            $.getJSON("/AllContacts/GetAccountCat", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#accountCat").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $(function () {
+            $.getJSON("/AllContacts/GetContactType", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#contType").igCombo({
+                    width: width,
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+            });
+        });
+
+        $('#contactTable').jtable({
+            title: 'Contact List',
+            paging: true,
+            pagesize: 3,
+            sorting: false,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick:false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ListOfContact","ContactGroup")?id=' + $("#contactid").val(),
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                FirstName: {
+                    title: 'FirstName',
+                    width: '10%'
+                },
+                LastName: {
+                    title: 'LastName',
+                    width: '10%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '10%'
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '10%',
+                },
+                City: {
+                    title: 'City',
+                    width: '10%',
+                },
+                Country: {
+                    title: 'Country',
+                    width: '5%',
+                    display: function (data) {
+                        return data.record.Country.Name;
+                    },
+                },
+
+            },
+            selectionChanged: function () {
+                var $selecedRows = $('#contactTable').jtable('selectedRows');
+            }
+        });
+
+        $("#Country").change(function (e) {
+            $("#city").val('');
+            var id = $('#Country').val();
+            if (id == null || id == "") {
+                id = 0;
+            }
+            e.preventDefault();
+            var city = $('#city');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetCityByCountry","ContactGroup")",
+                data: { contid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">All City</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.City + "\">" + item.City + "</option>";
+                    });
+                    city.html("");
+                    city.html(items);
+                },
+                error: function () {
+                }
+            });
+           
+         });
+
+        $("#first").focus(function (e) {
+            $('#last').val('');
+            e.preventDefault();
+        });
+        $("#last").focus(function (e) {
+            $('#first').val('');
+            e.preventDefault();
+        });
+
+        $("#search").click(function (e) {
+            var country = $("#country").igCombo("values");
+            var city = $("#city").igCombo("values");
+            var account = $("#account").igCombo("values");
+            var accountCat = $("#accountCat").igCombo("values");
+            var contType = $("#contType").igCombo("values");
+            var actType = $("#actType").igCombo("values");
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                contType: contType.toString(), actType: actType.toString(), actCat: accountCat.toString(), type: $("#type").val(), id: $('#contactid').val(), ctryid: country.toString(), city: city.toString(), acname: account.toString(), first: $('#first').val(), last: $('#last').val()
+                });
+        });
+
+        $("#clear").click(function (e) {
+            e.preventDefault();
+            $('#type').val('');
+            $("#account").igCombo("selectedIndex", -1);
+            $("#accountCat").igCombo("selectedIndex", -1);
+            $("#actType").igCombo("selectedIndex", -1);
+            $("#contType").igCombo("selectedIndex", -1);
+            $("#country").igCombo("selectedIndex", -1);
+            $("#city").igCombo("selectedIndex", -1);
+            $("#first").val('');
+            $("#last").val('');
+        });
+
+        $('#contactGroup').button().click(function () {
+            var groupid = $("#contactid").val();
+            var $selecedRows = $('#contactTable').jtable('selectedRows');
+            var list = groupid;
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+            $.ajax({
+                url: "@Url.Action("AddContact","ContactGroup")",
+                type: 'POST',
+                datatype: 'HTML',
+                data: { id: groupid, list: list },
+                success: function (data) {
+                    alert("Contacts Added");
+                    $('#contactTable').jtable('load', {
+                        id: $('#contactid').val()
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+        
+    });
+</script>

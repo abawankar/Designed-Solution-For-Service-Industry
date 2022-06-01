@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Message = "Contact Group";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit1" style="display: none">
+            <div id="loading">Loading....</div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-edit1").dialog({
+            title: 'Add Business Nature',
+            autoOpen: false,
+            resizable: false,
+            width: 950,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+        
+        $('#table').jtable({
+            title: 'Contact Group',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                deleteAction: '@Url.Action("Delete")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Date: {
+                    title: 'Creation Date',
+                    type: 'date',
+                    width: '3%',
+                    create: false,
+                    display: function (data) {
+                        return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                Name: {
+                    title: 'Group Name',
+                    width: '10%'
+                },
+                Note: {
+                    title: 'Note/Description',
+                    width: '20%',
+                    type:'textarea'
+                },
+
+                Empid: {
+                    title: 'Group Owner',
+                    width: '5%',
+                    create: false,
+                    edit:false,
+                    options: '@Url.Action("GetEmployeeList","Employee",new {area=string.Empty },null)',
+                 },
+
+                //Business Nature Table Start
+                Contact: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Add Contacts" class="child-opener-image" src="/Content/Images/user.png" width="20px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: "Group Name : " + data.record.Name,
+                                paging: true,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("GetContactList")?groupid=' + data.record.Id,
+                                    deleteAction: '@Url.Action("DeleteContact")?groupid=' + data.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    ContactType: {
+                                        title: 'ContactType',
+                                        width: '5%',
+                                        display: function (data) {
+                                            var type = "";
+                                            if (data.record.ContType != null) {
+                                                $.each(data.record.ContType, function (data, record) {
+                                                    if(type =="")
+                                                        type = record.Name;
+                                                    else 
+                                                        type = type + " / " + record.Name;
+                                                });
+                                            }
+                                            return type;
+                                        }
+                                    },
+                                    FirstName: {
+                                        title: 'FirstName',
+                                        width: '4%'
+                                    },
+                                    LastName: {
+                                        title: 'LastName',
+                                        width: '4%'
+                                    },
+                                    Email: {
+                                        title: 'Email',
+                                        width: '9%'
+                                    },
+                                    Mobile: {
+                                        title: 'Mobile',
+                                        width: '5%',
+                                    },
+                                    Phone: {
+                                        title: 'Phone',
+                                        width: '5%'
+                                    },
+                                    AccountName: {
+                                        title: 'Account Name',
+                                        width: '5%',
+                                    },
+                                    City: {
+                                        title: 'City',
+                                        width: '5%',
+                                    },
+                                    Country: {
+                                        title: 'Country',
+                                        width: '5%',
+                                        display: function (data) {
+                                            return data.record.Country.Name;
+                                        },
+                                    },
+
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/Add.png',
+                                        text: 'Add Contacts',
+                                        click: function () {
+                                            url = $('@Html.ActionLink("Contacts", "ContactList","ContactGroup")').attr('href');
+                                            url = url + "?id=" + data.record.Id;
+                                            $("#dialog-edit1").dialog("option", "title", "Add Contacts");
+                                            $("#dialog-edit1").dialog('open');
+                                            return false;
+                                        }
+                                    }]
+                                }
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+                //Business Nature*/
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+
+        
+    });
+</script>

@@ -1,0 +1,212 @@
+﻿@model D.UserInterFace.Areas.SCM.Models.Report.NboCalendarModel
+
+@{
+    ViewBag.Title = "Active Calender";
+}
+<div><h3>ACTIVE CALENDER <a href='javascript:window.print()'> Print</a> </h3></div>
+
+<style type="text/css">
+ table td {
+    border: 1px solid #989494;
+    color: #2c3168;
+    font-weight:normal;
+    background-color: #f9f6f6;
+    text-align:center;
+}
+table th, thead tr td {
+    border: 1px solid #989494;
+    color: #fff;
+    font-weight: bold;
+    background-color: #2b1971;
+}
+    .head2
+    {
+        color:white;
+        font-weight: bold;
+    }
+    .tot
+    {
+        background-color:#fbd809;
+        font-weight: bold;
+    }
+.textright
+    {
+        text-align:right;
+    }
+
+    .textleft
+    {
+        text-align:left;
+    }
+
+    .width
+    {
+        width:70px;
+    }
+    .date
+    {
+        width:90px;
+    }
+</style>
+
+@{
+    string[] month = { "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    var query = from n in Model.CurrentNBO
+                join b in Model.Incoming on n.Id equals b.nboid into mb
+                from incoming in mb.DefaultIfEmpty()
+                select new
+                {
+                    EventMonth = n.EventMonth,
+                    branch = n.Branch.Name,
+                    ClientName = n.ClientName.Name,
+                    Group = n.ContactName,
+                    PaxNo = n.PaxNo,
+                    Nature = n.Nature.Name,
+                    FileHandler = n.FileHandler.EmpName,
+                    Fileno = n.FileNumber,
+                    CheckinDate = n.CheckinDate,
+                    CheckOutDate = n.CheckOutDate,
+                    ContractValue = n.ContractValue,
+                    ContractCost = n.ContractCost,
+                    Margin = n.Margin,
+                    MarginP = n.MarginP,
+                    Received = incoming == null ? 0 : incoming.Received,
+                    Balance = incoming == null ? n.ContractValue : incoming.Balance
+                };
+    var data = from m in query.OrderBy(x=>x.CheckinDate)
+               group m by m.EventMonth into g
+               select g;               
+}
+  <table>
+   <thead>
+       <tr>
+           <td>Branch</td>  
+           <td>Agent Name</td>  
+           <td>Group Name</td>
+           <td>PaxNo</td>
+           <td>Nature</td>
+           <td>FileHandler</td>
+           <td>FileNo</td>
+           <td>CheckIn</td>
+           <td>CheckOut</td>
+           <td>CV</td>
+           <td>TC</td>
+           <td>M</td>
+           <td>MP%</td>
+           <td>Received</td>
+           <td>Balance</td>
+           <td colspan="5">Active/Potential/Proposal Stage</td>
+       </tr>
+       </thead>
+      <tbody>
+     @foreach (var item in data)
+    {
+         <tr><td class="head2" colspan="15" style="background-color:#a691ee">
+             @month[Convert.ToInt32(item.Key.Substring(0,2))]-@item.Key.Substring(4,2)</td>
+             <td class="head2" style="background-color:#a691ee">Wk1</td>
+             <td class="head2" style="background-color:#a691ee">Wk2</td>
+             <td class="head2" style="background-color:#a691ee">Wk3</td>
+             <td class="head2" style="background-color:#a691ee">Wk4</td>
+             <td class="head2" style="background-color:#a691ee">Wk5</td>
+         </tr>
+        foreach (var item1 in item.OrderBy(x=>x.CheckinDate))
+        {
+            <tr>
+                <td class="textleft">@item1.branch</td>
+                <td class="textleft">@item1.ClientName</td>
+                <td class="textleft">@item1.Group</td>
+                <td>@item1.PaxNo</td>
+                <td class="textleft">@item1.Nature</td>
+                <td class="textleft">@item1.FileHandler</td>
+                <td class="textright">@item1.Fileno</td>
+                <td class="textright date">@Convert.ToDateTime(item1.CheckinDate).ToString("dd MMM yyyy")</td>
+                <td class="textright date">@Convert.ToDateTime(item1.CheckOutDate).ToString("dd MMM yyyy")</td>
+                <td class="textright width">@Convert.ToDouble(item1.ContractValue).ToString("#,##0")</td>
+                <td class="textright width">@Convert.ToDouble(item1.ContractCost).ToString("#,##0")</td>
+                <td class="textright width">@Convert.ToDouble(item1.Margin).ToString("#,##0")</td>
+                <td class="textright width">@Convert.ToDouble(item1.MarginP).ToString("00.00")</td>
+                <td class="textright width">@Convert.ToDouble(item1.Received).ToString("#,##0")</td>
+                <td class="textright width">@Convert.ToDouble(item1.Balance).ToString("#,##0")</td>
+              
+                @switch (@MyExtension.GetWeekNumberOfMonth(Convert.ToDateTime(item1.CheckinDate)))
+                {
+                    case 1:
+                        {
+                            <td style="text-align:center; background-color:#b3ecec">@item1.PaxNo</td> 
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        }
+                        break;
+                    case 2:
+                    {
+                            <td></td>
+                            <td style="text-align:center; background-color:#89ecda">@item1.PaxNo</td> 
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        }
+                        break;
+                    case 3:
+                    {
+                            <td></td>
+                            <td></td>
+                            <td style="text-align:center; background-color:#43e8d8">@item1.PaxNo</td> 
+                            <td></td>
+                            <td></td>
+                        }
+                        break;
+                    case 4:
+                    {
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="text-align:center; background-color:#40e0d0">@item1.PaxNo</td> 
+                            <td></td>
+                        }
+                        break;
+                    case 5:
+                    {
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="text-align:center; background-color:#3bd6c6">@item1.PaxNo</td> 
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            </tr>
+        }
+        
+        <tr> <td class="tot" colspan="3">Total</td>
+             <td class="tot">@item.Sum(x=>x.PaxNo)</td>
+             <td class="tot" colspan="5"></td>
+             <td class="tot">@Convert.ToDouble(item.Sum(x=>x.ContractValue)).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(item.Sum(x=>x.ContractCost)).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(item.Sum(x=>x.Margin)).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble((item.Sum(x=>x.Margin)/item.Sum(x=>x.ContractValue))*100).ToString("#.00")</td>
+             <td class="tot">@Convert.ToDouble(item.Sum(x=>x.Received)).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(item.Sum(x=>x.Balance)).ToString("##,##0")</td>
+             <td class="tot" colspan="5"></td>
+            
+         </tr>
+    }
+          <tr> <td class="tot" colspan="3">Grand Total</td>
+             <td class="tot">@data.Sum(x=>x.Sum(y=>y.PaxNo))</td>
+             <td class="tot" colspan="5"></td>
+             <td class="tot">@Convert.ToDouble(data.Sum(x=>x.Sum(y=>y.ContractValue))).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(data.Sum(x=>x.Sum(y=>y.ContractCost))).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(data.Sum(x=>x.Sum(y=>y.Margin))).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble((data.Sum(x=>x.Sum(y=>y.Margin))/data.Sum(x=>x.Sum(y=>y.ContractValue)))*100).ToString("#.00")</td>
+             <td class="tot">@Convert.ToDouble(data.Sum(x=>x.Sum(y=>y.Received))).ToString("##,##0")</td>
+             <td class="tot">@Convert.ToDouble(data.Sum(x=>x.Sum(y=>y.Balance))).ToString("##,##0")</td>
+             <td class="tot" colspan="5"></td>
+            
+         </tr>
+      </tbody>
+      </table>
+
+

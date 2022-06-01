@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "Country";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $('#table').jtable({
+            title: 'Country Master',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                Name: {
+                    title: 'Country Name',
+                    width: '50%'
+                },
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "Country/ExportData";
+                            window.open(url);
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+
+        
+    });
+</script>

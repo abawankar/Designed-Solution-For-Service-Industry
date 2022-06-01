@@ -1,0 +1,211 @@
+﻿@model ViewUI.Models.CRM.NewAccountModel
+
+@{
+    ViewBag.Message = "Create Mail - Account";
+}
+@section styles{
+    <link href="../../Content/summernote/summernote.css" rel="stylesheet" />
+    <link href="../../Content/css/bootstrap.css" rel="stylesheet" />
+    <link href="../../Content/css/font-awesome.css" rel="stylesheet" />
+}
+
+@section Script{
+    <script src="../../Content/summernote/jquery-1.10.2.js"></script>
+    <script src="../../Content/summernote/bootstrap.js"></script>
+    <script src="../../Content/summernote/summernote.js"></script>
+    }
+<style type="text/css">
+    .table {
+       margin-bottom: 0px;
+}
+    .table > tbody > tr > td, .table > thead > tr > th, .table > tfoot > tr > td
+    {
+        padding:2px 5px;
+    }
+</style>
+
+<div class="filtering">
+    
+    @Html.ActionLink("Dashboard", "Index", "Home") |
+    @Html.ActionLink("Log", "Index", "AccountMailLog", new {accountid=@Model.Id},null) |
+    @if (ViewBag.type == "A") { 
+        @Html.ActionLink("Cancel","Index","NewAccount")
+    }
+     @if (ViewBag.type == "L") { 
+        @Html.ActionLink("Cancel","Index","LeastProducer")
+    }
+    
+    
+    @{
+        var cont = "";
+        var contid = "";
+      foreach (var item in Model.Contact)
+      {
+          if (cont == "")
+          {
+              cont = item.Email + ";";
+              contid = item.Id + ";";
+          }
+          else {
+              cont = cont + item.Email + ";";
+              contid = contid + item.Id + ";";
+          }
+      }
+        
+        }
+    <input type="hidden" id="allcontact" value="@cont" />
+    <input type="hidden" id="allcontactid" value="@contid" />
+</div>
+@using (Html.BeginForm("SendMail", "NewAccount", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{ 
+    <input type="hidden" name ="type" value="@ViewBag.type" />
+    <div class="panel panel-primary">
+    <div class="panel-heading panel-head">Create Mail : Account Name (@Model.AccountName)
+    </div>
+    <div class="panel-body">
+        <div class="form-horizontal">
+            
+            <div class="form-group">
+                 <div class="col-sm-1">
+                    <button type="button" title="Click to show/Hide Contact list" class="button" onclick="$('#mailid').toggle();">To.</button>
+                </div>
+                <div class="col-lg-9">
+                    <input type="hidden" name="accountid" value="@Model.Id" />
+                    <input type="text" id="to" name="to" style="width:100%;" />
+                    <input type="hidden" id="idlist" name="idlist" />
+                    <div id="mailid" style="display:none;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;"><input type="checkbox" id="chkAll" /> All</th>
+                                    <th>FirstName</th>
+                                    <th>LastName</th>
+                                    <th>Mail Id</th>
+                                    <th>Id</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Contact)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" name="checkbox" class="r1" /></td>
+                                        <td>@item.FirstName</td>
+                                        <td>@item.LastName</td>
+                                        <td>@item.Email</td>
+                                        <td>@item.Id</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                 <div class="col-sm-1">
+                    CC:
+                </div>
+                <div class="col-lg-9">
+                    <input type="text" name="cc" style="width:100%;"  />
+                </div>
+            </div>
+
+            <div class="form-group">
+                 <div class="col-sm-1">
+                    Replied To:
+                </div>
+                <div class="col-lg-9">
+                    <input type="text" name="replyto" style="width:100%;"  />
+                </div>
+            </div>
+
+            <div class="form-group">
+                 <div class="col-sm-1">
+                    Subject
+                </div>
+                <div class="col-lg-9">
+                    <input type="text" name="subject" style="width:100%;" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                 <div class="col-sm-1">
+                    Email Body
+                </div>
+                <div class="col-lg-9">
+                    <textarea id="textarea3" name="MailBody" style="width:auto;"></textarea>
+                        <script type="text/javascript">
+                            $('#textarea3').summernote({
+                                focus: true,
+                                height: 100,
+                                codemirror: {
+                                    theme: 'united'
+                                }
+                            });
+                        </script>
+                </div>
+            </div>
+
+            <div class="form-group">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-9">
+                        <button class="btn btn-success" id="btnSubmit" type="submit">
+                            Send
+                        </button>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+    </div>
+        
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+       
+        $('#chkAll').click(function () {
+            $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
+            if (this.checked) {
+                $("#to").val($("#allcontact").val());
+                $("#idlist").val($("#allcontactid").val());
+            }
+            else {
+                $("#to").val('');
+                $("#idlist").val('');
+            }
+        });
+
+        $('.r1').click(function () {
+            var to = $("#to").val();
+            var id = $("#idlist").val();
+            var allData = $(this).parent().parent().first().text();
+            var data = allData.split('\n');
+            var mail = $.trim(data[4]);
+            var idlist = $.trim(data[5]);
+            if (to == "") {
+                if (this.checked) {
+                    $("#to").val(mail + ";");
+                    $("#idlist").val(idlist + ";");
+                } 
+            }
+            else {
+                if (this.checked) {
+                    to = to + mail + ";";
+                    id = id + idlist + ";";
+                    $("#to").val(to);
+                    $("#idlist").val(id);
+
+                }
+                else {
+                    to = to.replace(mail + ";", "")
+                    id = id.replace(idlist + ";", "")
+                    $("#to").val(to);
+                    $("#idlist").val(id);
+                }
+            }
+            
+        });
+
+    });
+</script>

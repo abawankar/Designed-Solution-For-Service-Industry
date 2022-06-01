@@ -1,0 +1,400 @@
+﻿@{
+    ViewBag.Message = "Leads";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.ui.chart.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.dv.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+        @Html.ActionLink("Contacts", "Index", "AllPotentialContacts")
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"></div>
+        <div id="dialog-edit2" style="display: none"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var flag = '@User.IsInRole("Admin")';
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            height: 400,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //Dialog form
+        $("#dialog-edit2").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        //End dialog form
+
+        $('#table').jtable({
+            title: 'Leads',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                    options: { "Client": "Client", "Supplier": "Supplier" }
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '1%'
+                },
+                IndustryId: {
+                    title: 'Account Category',
+                    width: '2%',
+                    options: '@Url.Action("GetIndustryOptions","Industry")'
+                },
+                Website: {
+                    title: 'Website',
+                    width: '5%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '6%',
+                    type: 'textarea'
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '5%'
+                },
+                AddressInformation: {
+                    title: '',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<div style="font-weight:bold;color:#015941;">Address Information </div>';
+                    }
+                },
+
+                Street: {
+                    title: 'Street',
+                    width: '5%'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                State: {
+                    title: 'State',
+                    width: '2%'
+                },
+                ZipPostalCode: {
+                    title: 'ZipPostalCode',
+                    width: '2%',
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '2%',
+                    options: '@Url.Action("GetCountryOptions","Country", new {area=string.Empty },null)'
+                },
+                map: {
+                    title: '',
+                    width: '1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<img title="Map" class="child-opener-image pointer" src="/Content/Images/gmap.png" width=22 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("Map", "ViewMap", "PotentialAccount")').attr('href');
+                            url = url + "?id=" + data.record.Id;
+                            $("#dialog-edit").dialog("option", "title", "Map:" + data.record.AccountName);
+                            $("#dialog-edit").dialog('open');
+                        });
+                        return $img;
+                    }
+                },
+                Convert: {
+                    title: '',
+                    width: '1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<a title="Convert" class="child-opener-image pointer" src="#">Convert</a>');
+                        $img.click(function () {
+                            var r = confirm("Do you want to Convert To New Account?");
+                            if (r == true) {
+                                url = $('@Html.ActionLink("Convert", "Convert", "PotentialAccount")').attr('href');
+                                url = url + "?id=" + data.record.Id;
+                                window.location.href = url;
+                            }
+                        });
+                        return $img;
+                    }
+                },
+                Contact: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Contacts" class="child-opener-image pointer" src="/Content/Images/user.png" width=22 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.AccountName + " - Contact",
+                                paging: false,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("ListContact")?id=' + data.record.Id,
+                                    updateAction: '@Url.Action("EditContact")',
+                                    deleteAction: '@Url.Action("DeleteContact")',
+                                    createAction: '@Url.Action("AddContact")?id=' + data.record.Id
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Salutation: {
+                                        title: 'Salutation',
+                                        width: '2%'
+                                    },
+                                    FirstName: {
+                                        title: 'FirstName',
+                                        width: '2%'
+                                    },
+                                    MiddleName: {
+                                        title: 'MiddleName',
+                                        width: '2%',
+                                        list: false
+                                    },
+                                    LastName: {
+                                        title: 'LastName',
+                                        width: '2%'
+                                    },
+                                    Title: {
+                                        title: 'Title',
+                                        width: '2%'
+                                    },
+                                    Phone: {
+                                        title: 'Phone',
+                                        width: '2%'
+                                    },
+                                    PhoneDirect: {
+                                        title: 'Phone Direct',
+                                        width: '5%'
+                                    },
+                                    Email: {
+                                        title: 'Email',
+                                        width: '2%'
+                                    },
+                                    EmailOpt: {
+                                        title: 'EmailOpt',
+                                        width: '2%',
+                                        type: 'checkbox',
+                                        values: { 'false': 'Yes', 'true': 'No' },
+                                        defaultValue: 'false',
+                                    },
+                                    Messanger: {
+                                        title: 'Messenger',
+                                        width: '5%'
+                                    },
+                                    Mobile: {
+                                        title: 'Mobile',
+                                        width: '2%'
+                                    },
+                                    Department: {
+                                        title: 'Department',
+                                        width: '2%'
+                                    },
+                                    AddressInformation: {
+                                        title: '',
+                                        width: '2%',
+                                        list: false,
+                                        input: function (data) {
+                                            return '<div style="font-weight:bold;color:#015941;">Address Information </div>';
+                                        }
+                                    },
+                                    Street: {
+                                        title: 'Street',
+                                        width: '5%',
+                                        type: 'textarea',
+                                        list: false
+                                    },
+                                    City: {
+                                        title: 'City',
+                                        width: '2%'
+                                    },
+                                    StateProvince: {
+                                        title: 'StateProvince',
+                                        width: '2%',
+                                        list: false
+                                    },
+                                    CountryId: {
+                                        title: 'Country',
+                                        width: '2%',
+                                        options: '@Url.Action("GetCountryOptions","Country")'
+                                      },
+                                      ZipPostalCode: {
+                                          title: 'ZipPostalCode',
+                                          width: '2%',
+                                          list: false
+                                      },
+                                      Contactmap: {
+                                          title: '',
+                                          width: '0.1%',
+                                          create: false,
+                                          edit: false,
+                                          display: function (data) {
+                                              var $img = $('<img title="Map" class="child-opener-image" src="Content/Images/gmap.png" width=22 />');
+                                              $img.click(function () {
+                                                  url = $('@Html.ActionLink("Map", "ViewContactMap", "PotentialAccount")').attr('href');
+                                                  url = url + "?id=" + data.record.Id;
+                                                  $("#dialog-edit").dialog("option", "title", "Map:" + data.record.LastName);
+                                                  $("#dialog-edit").dialog('open');
+                                              });
+                                              return $img;
+                                          }
+                                      },
+
+                                },
+                                
+                                formCreated: function (event, data) {
+                                    data.form.find('input[name="FirstName"]').addClass('validate[required]');
+                                    data.form.find('input[name="City"]').addClass('validate[required]');
+                                    data.form.find('input[name="Email"]').addClass('validate[required,custom[email]]');
+                                    data.form.validationEngine();
+                                },
+                                formSubmitting: function (event, data) {
+                                    return data.form.validationEngine('validate');
+                                },
+                                formClosed: function (event, data) {
+                                    data.form.validationEngine('hide');
+                                    data.form.validationEngine('detach');
+                                }
+
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/import.png',
+                    text: 'Import Leads',
+                    click: function () {
+                        var flage = '@User.IsInRole("Admin")';
+                        var man = '@User.IsInRole("Management")'
+                        if (flage == 'True' || man == 'True') {
+                            url = "PotentialAccount/Import";
+                            $("#dialog-edit2").dialog("option", "title", "Import Leads - Select File");
+                            $("#dialog-edit2").dialog('open');
+                        } else {
+                            alert("Restricted Area, Please contact System Administrator");
+                        }
+                    }
+                },
+                {
+                    icon: '/Content/Images/import.png',
+                    text: 'Import Contacts',
+                    click: function () {
+                        var flage = '@User.IsInRole("Admin")';
+                        var man = '@User.IsInRole("Management")'
+                        if (flage == 'True' || man == 'True') {
+                            url = "PotentialAccount/ImportContact";
+                            $("#dialog-edit2").dialog("option", "title", "Import Leads Contact - Select File");
+                            $("#dialog-edit2").dialog('open');
+                        } else {
+                            alert("Restricted Area, Please contact System Administrator");
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="AccountName"]').addClass('validate[required]');
+                data.form.find('input[name="City"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+
+
+    });
+</script>

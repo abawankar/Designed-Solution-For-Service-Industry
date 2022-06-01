@@ -1,0 +1,293 @@
+﻿@{
+    ViewBag.Title = "Finance";
+}
+
+<input type="hidden" id="nboid" name="nboid" value="@ViewBag.nboid" />
+<input type="hidden" id="file" name="file" value="@ViewBag.filenumber" />
+<div>
+    <div id="incoming" style="float:left;width:480px"></div>
+    <div id="outgoing" style="float:right;width:480px"></div>
+</div>
+<div style="width:1000px;float:left;">
+    <div style="float:left;width:480px;border:1px solid #b6b6b6">
+        <table>
+        <tr>
+            <td>Total Amount</td>
+            <td>Total Received</td>
+            <td>Balance</td>
+        </tr>
+        <tr>
+            <td><input style="width:125px;" type="text" readonly="true" id="amount" /></td>
+            <td><input style="width:125px;" type="text" readonly="true" id="recdAmount" /></td>
+            <td><input style="width:125px;" type="text" readonly="true" id="recdBalance" /></td>
+        </tr>
+    </table>
+    </div>
+    
+    <div style="float:right;width:480px;border:1px solid #b6b6b6;">
+        <table>
+        <tr>
+            <td>Total Amount</td>
+            <td>Total Paid</td>
+            <td>Balance</td>
+        </tr>
+        <tr>
+            <td><input style="width:125px;" type="text" readonly="true" id="amountPayable" /></td>
+            <td><input style="width:125px;" type="text" readonly="true" id="paidAmount" /></td>
+            <td><input style="width:125px;" type="text" readonly="true" id="paidBalance" /></td>
+        </tr>
+    </table>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        var receivableAmount = 0;
+        var receivedAmount = 0;
+        var balance = 0;
+
+        var payableAmount = 0;
+        var paidAmount = 0;
+        var paidbalance = 0;
+
+        $('#incoming').jtable({
+            title: 'Incoming +',
+            paging: false,
+            sorting: false,
+            actions: {
+                listAction: '@Url.Action("List","Receivable")?nboid=' + $("#nboid").val(),
+                updateAction: '@Url.Action("Update","Receivable")',
+                deleteAction: '@Url.Action("Delete","Receivable")',
+                createAction: '@Url.Action("Create","Receivable")?nboid=' + $("#nboid").val()
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Incoming: {
+                    title: '',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<div style="font-weight:bold;color:red;">INCOMING +</div>';
+                    }
+                },
+                FileNumber: {
+                    title: 'Refrence no',
+                    width: '2%',
+                    list:false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + $("#file").val() + '"/>';
+                    }
+                },
+                ClientName: {
+                    title: 'Client',
+                    width: '2%',
+                    create:false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.value + '"/>';
+                    }
+                },
+                Amount: {
+                    title: 'Amount',
+                    width: '10%',
+                },
+                DueDate: {
+                    title: 'DueDate',
+                    type: 'date',
+                    width: '10%',
+                    display: function (data) {
+                        return moment(data.record.DueDate).format('DD-MMM-YYYY')
+                    },
+                },
+                DepositType: {
+                    title: 'Deposit Type',
+                    width: '10%',
+                    list:false
+                },
+                Description: {
+                    title: 'Description',
+                    width: '10%',
+                    list: false
+                },
+                DateReceived: {
+                    title: 'Date Received',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        return moment(data.record.DateReceived).format('DD-MMM-YYYY')
+                    },
+                    list: false
+                },
+                AmountReceived: {
+                    title: 'Amount Received',
+                    width: '10%',
+                },
+                Balance: {
+                    title: 'Balance',
+                    width: '2%',
+                    edit: false,
+                    create: false,
+                },
+                PaymentMode: {
+                    title: 'Payment Mode',
+                    width: '10%',
+                    options:{'Cash':'Cash','Cheque':'Cheque','Bank Transfer':'Bank Transfer','Credit Card':'Credit Card'},
+                    list: false
+                },
+                Status: {
+                    title: 'Status',
+                    width: '2%',
+                    options: { '0': 'Open', '1': 'Closed' },
+                },
+
+
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="DueDate"]').addClass('validate[required,custom[date]]');
+                data.form.find('input[name="Amount"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="AmountReceived"]').css({ 'background-color': '#FF0' });
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            },
+            rowInserted: function (event, data) {
+                receivableAmount = receivableAmount + data.record.Amount;
+                receivedAmount = receivedAmount + data.record.AmountReceived;
+                document.getElementById('amount').value = receivableAmount.toFixed(2);
+                document.getElementById('recdAmount').value = receivedAmount.toFixed(2);
+                document.getElementById('recdBalance').value = (receivableAmount-receivedAmount).toFixed(2);
+            },
+            
+        });
+        $('#incoming').jtable('load');
+
+
+        $('#outgoing').jtable({
+            title: 'Outgoing +',
+            paging: false,
+            sorting: false,
+            actions: {
+                listAction: '@Url.Action("List","Payable")?nboid=' + $("#nboid").val(),
+                updateAction: '@Url.Action("Update","Payable")',
+                deleteAction: '@Url.Action("Delete","Payable")',
+                createAction: '@Url.Action("Create","Payable")?nboid=' + $("#nboid").val()
+            },
+             fields: {
+                 Id: {
+                     title: 'Id',
+                     width: '1%',
+                     key: true,
+                     create: false,
+                     edit: false,
+                     list: false
+                 },
+                 Outgoing: {
+                     title: '',
+                     width: '2%',
+                     list: false,
+                     input: function (data) {
+                         return '<div style="font-weight:bold;color:red;">OUTGOING +</div>';
+                     }
+                 },
+                 FileNumber: {
+                     title: 'Refrence no',
+                     width: '2%',
+                     list: false,
+                     input: function (data) {
+                         return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + $("#file").val() + '"/>';
+                     }
+                 },
+                 SupplierId: {
+                     title: 'Supplier Name',
+                     width: '10%',
+                     options: '@Url.Action("GetSupplierOptions","Supplier")',
+                     list:true
+                 },
+                 Amount: {
+                     title: 'Amount',
+                     width: '10%'
+                 },
+                 DueDate: {
+                     title: 'DueDate',
+                     type: 'date',
+                     width: '10%',
+                     display: function (data) {
+                         return moment(data.record.DueDate).format('DD-MMM-YYYY')
+                     },
+                 },
+                 DepositType: {
+                     title: 'Deposit Type',
+                     width: '10%',
+                     list: false
+                 },
+                 Description: {
+                     title: 'Description',
+                     width: '10%',
+                     list: false
+                 },
+                 DatePaid: {
+                     title: 'Date Paid',
+                     type: 'date',
+                     width: '2%',
+                     display: function (data) {
+                         return moment(data.record.DatePaid).format('DD-MMM-YYYY')
+                     },
+                     list: false
+                 },
+                 AmountPaid: {
+                     title: 'Amount Paid',
+                     width: '10%',
+                 },
+                 Balance: {
+                     title: 'Balance',
+                     width: '2%',
+                     edit: false,
+                     create:false,
+                 },
+                 PaymentMode: {
+                     title: 'Payment Mode',
+                     width: '10%',
+                     options: { 'Cash': 'Cash', 'Cheque': 'Cheque', 'Bank Transfer': 'Bank Transfer', 'Credit Card': 'Credit Card' },
+                     list: false
+                 },
+                 Status: {
+                     title: 'Status',
+                     width: '2%',
+                     options: { '0': 'Open', '1': 'Closed'},
+                 },
+             },
+            formCreated: function (event, data) {
+                data.form.find('input[name="DueDate"]').addClass('validate[required,custom[date]]');
+                data.form.find('input[name="Amount"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="AmountPaid"]').css({ 'background-color': '#FF0' });
+                 data.form.validationEngine();
+             },
+             formSubmitting: function (event, data) {
+                 return data.form.validationEngine('validate');
+             },
+             formClosed: function (event, data) {
+                 data.form.validationEngine('hide');
+                 data.form.validationEngine('detach');
+             },
+             rowInserted: function (event, data) {
+                 payableAmount = payableAmount + data.record.Amount;
+                 paidAmount = paidAmount + data.record.AmountPaid;
+                 document.getElementById('amountPayable').value = payableAmount.toFixed(2);
+                 document.getElementById('paidAmount').value = paidAmount.toFixed(2);
+                 document.getElementById('paidBalance').value = (payableAmount - paidAmount).toFixed(2);
+             },
+         });
+        $('#outgoing').jtable('load');
+    });
+</script>

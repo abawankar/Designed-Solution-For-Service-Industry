@@ -1,0 +1,220 @@
+﻿@model IEnumerable<D.UserInterFace.Areas.SCM.Models.Transaction.NBOModel>
+@{
+    ViewBag.Title = "ActivityReport";
+}
+
+<style type="text/css">
+    .th
+    {
+        text-align:center;
+        border:1px solid;
+        padding:4px;
+        color:#fff;
+        background-color:#a7a2a2;
+    }
+    .tb
+    {
+        text-align:right;
+        border:1px solid #000;
+        padding:2px;
+        color:#000000;
+    }
+    .tf
+    {
+        padding:4px;
+        border:1px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:center;
+    }
+    .tf1
+    {
+        padding:4px;
+        border:1px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:right;
+    }
+     
+</style>
+
+
+@{
+    var data = from n in Model
+               group n by n.Nature.Name into g
+               select new
+               {
+                   Nature = g.Key,
+                   //ProposalStage
+                   ProposalFile = g.Where(x => x.Status.Id == 1).Count(),
+                   ProposalValue = g.Where(x => x.Status.Id == 1).Sum(x=>x.ContractValue),
+                   //Active/Potantial
+                   ActiveFile = g.Where(x => x.Status.Id == 2 || x.Status.Id == 3).Count(),
+                   ActiveValue = g.Where(x => x.Status.Id == 2 || x.Status.Id == 3).Sum(x => x.ContractValue),
+                   //Confirmed/Contracted/Operated/Closed
+                   ConfirmendFile = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Count(),
+                   ConfirmendValue = g.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Sum(x => x.ContractValue),
+                   //Cancelled /Inactive
+                   CancelledFile = g.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Count(),
+                   CancelledValue = g.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Sum(x => x.ContractValue),
+                   TotalFiles = g.Count(),
+                   TotalValue = g.Sum(x=>x.ContractValue)
+               };
+    }
+
+
+        <h3>Staff Activity Report  <a href='javascript:window.print()'> Print</a></h3>
+
+    <table>
+    <thead>
+        <tr>
+            <td rowspan="2" class="tf">Nature</td>
+            <td colspan="3" class="th" style="background-color:#ff6a00;">ProposalStage</td>
+            <td colspan="3" class="th" style="background-color:#ffd800;">Active/Potantial</td>
+            <td colspan="3" class="th" style="background-color:#0aef2a;">Confirmed/Contracted/Operated/Closed</td>
+            <td colspan="3" class="th" style="background-color:#7d0909;">Cancelled /Inactive</td>
+            <td colspan="3" class="th" style="background-color:#9c076b;">Total</td>
+        </tr>
+        <tr>
+            <td class="tf" style="width:80px;">No of Files</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">%</td>
+            <td class="tf" style="width:80px;">No of Files</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">%</td>
+            <td class="tf" style="width:80px;">No of Files</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">%</td>
+            <td class="tf" style="width:80px;">No of Files</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">%</td>
+            <td class="tf" style="width:80px;">No of Files</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">%</td>
+            
+       </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in data.OrderBy(x=>x.Nature))
+        {
+            double gTotal = Convert.ToDouble(data.Sum(x => x.TotalFiles));
+            double total = Convert.ToDouble(item.TotalFiles);
+            double proposal = Convert.ToDouble(item.ProposalFile);
+            double active = Convert.ToDouble(item.ActiveFile);
+            double closed = Convert.ToDouble(item.ConfirmendFile);
+            double Cancelled = Convert.ToDouble(item.CancelledFile);
+            
+            <tr>
+                <td class="tb" style="text-align:left;"> @item.Nature </td>
+                <td class="tb"> @item.ProposalFile</td>
+                <td class="tb"> @Convert.ToDouble(item.ProposalValue).ToString("##,##0")</td>
+                <td class="tb"> @(((proposal/total)*100).ToString("##0.00"))</td>
+                <td class="tb"> @item.ActiveFile</td>
+                <td class="tb"> @Convert.ToDouble(item.ActiveValue).ToString("##,##0")</td>
+                <td class="tb"> @(((active/total)*100).ToString("##0.00"))</td>
+                <td class="tb"> @item.ConfirmendFile</td>
+                <td class="tb"> @Convert.ToDouble(item.ConfirmendValue).ToString("##,##0")</td>
+                <td class="tb"> @(((closed/total)*100).ToString("##0.00"))</td>
+                <td class="tb"> @item.CancelledFile</td>
+                <td class="tb"> @Convert.ToDouble(item.CancelledValue).ToString("##,##0")</td>
+                <td class="tb"> @(((Cancelled/total)*100).ToString("##0.00"))</td>
+                <td class="tb"> @item.TotalFiles</td>
+                <td class="tb"> @Convert.ToDouble(item.TotalValue).ToString("##,##0")</td>
+                <td class="tb"> @(((total/gTotal)*100).ToString("##0"))</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        @{
+            double grandTotal = Convert.ToDouble(data.Sum(x => x.TotalFiles));
+            double grandproposal = Convert.ToDouble(data.Sum(x => x.ProposalFile));
+            double grandactive = Convert.ToDouble(data.Sum(x => x.ActiveFile));
+            double grandclosed = Convert.ToDouble(data.Sum(x => x.ConfirmendFile));
+            double grandCancelled = Convert.ToDouble(data.Sum(x => x.CancelledFile));
+            double totalFiles = Convert.ToDouble(data.Sum(x => x.TotalFiles));
+            
+        }
+        <tr>
+            <td class="tf1">TOTAL</td>
+            <td class="tf1" id="proposal">@data.Sum(x=>x.ProposalFile)</td>
+            <td class="tf1">@Convert.ToDouble(data.Sum(x=>x.ProposalValue)).ToString("##,##0")</td>
+            <td class="tf1">@(((grandproposal/grandTotal)*100).ToString("##0.00"))</td>
+            <td class="tf1" id="active">@data.Sum(x=>x.ActiveFile)</td>
+            <td class="tf1">@Convert.ToDouble(data.Sum(x=>x.ActiveValue)).ToString("##,##0")</td>
+            <td class="tf1">@(((grandactive/grandTotal)*100).ToString("##0.00"))</td>
+            <td class="tf1" id="confirmed">@data.Sum(x=>x.ConfirmendFile)</td>
+            <td class="tf1">@Convert.ToDouble(data.Sum(x=>x.ConfirmendValue)).ToString("##,##0")</td>
+            <td class="tf1">@(((grandclosed/grandTotal)*100).ToString("##0.00"))</td>
+            <td class="tf1" id="cancelled">@data.Sum(x=>x.CancelledFile)</td>
+            <td class="tf1">@Convert.ToDouble(data.Sum(x=>x.CancelledValue)).ToString("##,##0")</td>
+            <td class="tf1">@(((grandCancelled/grandTotal)*100).ToString("##0.00"))</td>
+            <td class="tf1">@totalFiles</td>
+            <td class="tf1">@Convert.ToDouble(data.Sum(x=>x.TotalValue)).ToString("##,##0")</td>
+            <td class="tf1">@(((grandTotal/grandTotal)*100).ToString("##0.00"))</td>
+        </tr>
+    </tfoot>
+</table>
+
+
+  @{
+      DateTime dt = Convert.ToDateTime(ViewBag.DateFrom);
+      DateTime to = Convert.ToDateTime(ViewBag.DateTo);
+      double days = 0;
+      double avgPerday = 0;
+      
+      if (dt != null && to != null)
+      {
+          days = (int)(to - dt).TotalDays;
+          avgPerday = days == 0 ? 0 : (totalFiles / days);
+      }
+  }
+    <table style="margin-top:10px;">
+
+        <tr>
+            <td class="tf">Average Per Day</td>
+            <td class="tf">@avgPerday.ToString("0.00000")</td>
+
+            <td class="tf" rowspan="3" style="width:300px;"><div id="chart1"></div> </td>
+        </tr>
+        <tr><td class="tf">Total Proposal & Active</td>
+            <td class="tf">@(grandproposal+grandactive)</td>
+        </tr>
+        <tr><td class="tf">Materialization %</td>
+            <td class="tf">@(((grandclosed/grandTotal)*100).ToString("##.00"))</td>
+        </tr>
+        
+    </table>
+
+<script>
+
+        $(function () {
+            var active = document.getElementById("active").innerText;
+            var confirmed = document.getElementById("confirmed").innerText;
+            var cancelled = document.getElementById("cancelled").innerText;
+            var proposal = document.getElementById("proposal").innerText;
+            
+            var data = [
+                { "Status": "Proposal", "Files":parseInt(proposal)},
+                { "Status": "Active", "Files": parseInt(active) },
+                { "Status": "Confirmed", "Files": parseInt(confirmed) },
+                { "Status": "Cancelled", "Files": parseInt(cancelled) },
+            ];
+
+            $("#chart1").igPieChart({
+                width: "300px",
+                height: "200px",
+                dataSource: data, //JSON data defined above
+                valueMemberPath: "Files",
+                labelMemberPath: "Status",
+                labelsPosition: "bestFit"
+            });
+
+        });
+    </script>
+
+
+
+
+
+
+

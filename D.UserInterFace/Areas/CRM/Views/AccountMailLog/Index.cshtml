@@ -1,0 +1,177 @@
+﻿@{
+    ViewBag.message = "Account Mail Log";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.ActionLink("Account", "Index", "NewAccount") |
+        @Html.ActionLink("Least Producer", "Index", "LeastProducer")
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: 'Print Labels',
+            autoOpen: false,
+            resizable: false,
+            width: 400,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+
+        $('#table').jtable({
+            title: 'Account Mail Log',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                deleteAction: '@Url.Action("Delete")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                AccountId: {
+                    title: 'Account Name',
+                    width: '10%',
+                    display: function (d) {
+                        return d.record.AccountId.AccountName;
+                    }
+                },
+                Subject: {
+                    title: 'Subject',
+                    width: '10%'
+                },
+                Mailbody: {
+                    title: 'Message',
+                    width: '10%',
+                    display: function (data) {
+                        var $img = $('<a title="View Message" class="child-opener-image" src="Content/Images/mail.png" width=20>Message</a>');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("testmail", "Mailbody","AccountMailLog")').attr('href');
+                            url = url + "?id=" + data.record.Id;
+                            $("#dialog-edit").dialog("option", "title", "Message");
+                            $("#dialog-edit").dialog('open');
+                            return false;
+                        });
+                        return $img;
+                    }
+                },
+                EmpId: {
+                    title: 'Owner',
+                    width: '10%',
+                    display: function (d) {
+                        return d.record.Owner.EmpName;
+                    }
+                },
+                Date: {
+                    title: 'Date',
+                    type: 'date',
+                    width: '10%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return moment(data.record.date).format('DD-MMM-YYYY')
+                    },
+                },
+                CC: {
+                    title: 'CC',
+                    width: '10%'
+                },
+                Contact: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Contacts" class="child-opener-image" src="Content/Images/usergroup.png" width="20px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: "Account Name : " + data.record.AccountId.AccountName,
+                                actions: {
+                                    listAction: '@Url.Action("GetContactList")?id=' + data.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Salutation: {
+                                        title: 'Salutation',
+                                        width: '2%'
+                                    },
+                                    FirstName: {
+                                        title: 'First Name',
+                                        width: '9%'
+                                    },
+                                    LastName: {
+                                        title: 'Last Name',
+                                        width: '9%'
+                                    },
+                                    Email: {
+                                        title: 'Email',
+                                        width: '9%'
+                                    },
+                                    Country: {
+                                        title: 'Country',
+                                        width: '10%',
+                                        display: function (data) {
+                                            return data.record.Country.Name;
+                                        },
+                                    },
+                                },
+                     
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+            },
+           
+        });
+        $('#table').jtable('load', {
+            accountid:'@ViewBag.accountid'
+        });
+        
+        $("#status").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#status').val()
+            });
+        });
+    });
+</script>

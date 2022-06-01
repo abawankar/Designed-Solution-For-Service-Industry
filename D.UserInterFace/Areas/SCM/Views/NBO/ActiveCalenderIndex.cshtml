@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Active Calender";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-sm-12">
+                @Html.ActionLink("Dashboard", "Index", "Home") |
+                @if (HttpContext.Current.User.IsInRole("User") || HttpContext.Current.User.IsInRole("Manager"))
+                {
+                    @Html.DropDownList("Branch", new SelectList((ViewBag.Branch) as SelectList, "Value", "Text"),null, new { @class = "search-box" })
+                }
+                else
+                {
+                    @Html.DropDownList("Branch", new SelectList((ViewBag.Branch) as SelectList, "Value", "Text"), "Branch", new { @class = "search-box" })
+                }
+                @if (HttpContext.Current.User.IsInRole("User"))
+                {
+                    @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"),null, new { @class = "search-box" });
+                }
+                else
+                {
+                    @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "File Handler", new { @class = "search-box" });
+                }
+                @Html.DropDownList("Nature", new SelectList((ViewBag.Nature) as SelectList, "Value", "Text"), "Nature", new { @class = "search-box" })
+
+
+                <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+                    <span class="fa fa-filter" aria-hidden="true"></span> Filter
+                    <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+                </button>
+                <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+                    <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+                </button>
+            </div>
+            <div class="col-sm-12 topmar-10">
+                Event Date From:<input type="date" id="dateFrom" class="search-box" />To:<input type="date" id="dateTo" class="search-box" />
+            </div>
+
+        </div>
+
+    </div>
+    <div class="panel-body">
+        <div id="act" style="display:none;" class="table-responsive">
+            @{Html.RenderAction("ActiveCalender");}
+        </div>
+
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $("#filter").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val();
+            var empid = $('#Emp').val();
+            var natid = $('#Nature').val();
+            var branchid = $('#Branch').val();
+
+            if (datefrom == "" || dateto == "") {
+                alert("Please select time period");
+                return;
+            }
+            e.preventDefault();
+            var act = $('#act');
+
+            act.hide();
+            $('#loading').show();
+
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("ActiveCalender","NBO")",
+                data: { branch: branchid, empid: empid, natid: natid, dateFrom: datefrom, dateTo: dateto },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+        });
+        
+        $("#Branch").change(function (e) {
+            $('#Status').val('');
+            var id = $('#Branch').val();
+            e.preventDefault();
+            var emp = $('#Emp');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetEmployee","Company")",
+                data: { branid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">File Handler</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.Id + "\">" + item.EmpName + "</option>";
+                    });
+                    emp.html("");
+                    emp.html(items);
+                    $('#table').jtable('load', {
+                        branch: $('#Branch').val(), col: 'branch'
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+
+        $("#export").click(function (e) {
+
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val();
+
+            if (datefrom == "" || dateto == "") {
+                alert("Please select time period");
+                return;
+            }
+
+            var url = "ExportActive?dateFrom=" + $('#dateFrom').val() + "&dateTo=" + $('#dateTo').val() + "&branch=" + $('#Branch').val() + "&empid=" + $('#Emp').val() + "&natid=" + $('#Nature').val();
+            window.open(url);
+        });
+        
+    });
+</script>
+

@@ -1,0 +1,241 @@
+﻿@{
+    ViewBag.Title = "Company";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: 'Add Business Nature',
+            autoOpen: false,
+            resizable: false,
+            width: 400,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        //end dialog form
+        $('#table').jtable({
+            title: 'Company',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                Code: {
+                    title: 'Code',
+                    width: '2%'
+                },
+                Name: {
+                    title: 'Name',
+                    width: '5%'
+                },
+                Address: {
+                    title: 'Address',
+                    width: '10%',
+                    type:'textarea'
+                },
+                PhoneNo: {
+                    title: 'PhoneNo',
+                    width: '5%'
+                },
+                FaxNo: {
+                    title: 'FaxNo',
+                    width: '5%'
+                },
+                //Child table for Branches
+                Branches: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="branches" class="pointer child-opener-image" src="Content/Images/b.png" width="22"/>');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.Name + " - Branches",
+                                paging: false,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("ListBranches")?compId=' + data.record.Id,
+                                    updateAction: '@Url.Action("EditBranch")',
+                                    createAction: '@Url.Action("AddBranch")?compId=' + data.record.Id
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: true
+                                    },
+                                    Code: {
+                                        title: 'Code',
+                                        width: '2%'
+                                    },
+                                    Name: {
+                                        title: 'Name',
+                                        width: '5%'
+                                    },
+                                    Address: {
+                                        title: 'Address',
+                                        width: '10%',
+                                        type: 'textarea'
+                                    },
+                                    PhoneNo: {
+                                        title: 'PhoneNo',
+                                        width: '5%'
+                                    },
+                                    FaxNo: {
+                                        title: 'FaxNo',
+                                        width: '5%'
+                                    },
+                                    
+                                    //Child table for Branches
+                                    Department: {
+                                        title: '',
+                                        width: '0.5%',
+                                        sorting: false,
+                                        create: false,
+                                        edit: false,
+                                        listClass: 'child-opener-image-column',
+                                        display: function (data) {
+                                            var $img = $('<img title="departments" class="pointer child-opener-image" src="Content/Images/D.png" width=22 />');
+                                            $img.click(function () {
+                                                $('#table').jtable('openChildTable', $img.closest('tr'),
+                                                {
+                                                    title: data.record.Name + " - Departments",
+                                                    paging: false,
+                                                    pagesize: 3,
+                                                    actions: {
+                                                        listAction: '@Url.Action("ListDepartment")?branId=' + data.record.Id,
+                                                        updateAction: '@Url.Action("EditDepartment")',
+                                                        createAction: '@Url.Action("AddDepartment")?branId=' + data.record.Id
+                                                    },
+                                                    fields: {
+                                                        Id: {
+                                                            title: 'Id',
+                                                            width: '1%',
+                                                            key: true,
+                                                            create: false,
+                                                            edit: false,
+                                                            list: true
+                                                        },
+                                                        Code: {
+                                                            title: 'Code',
+                                                            width: '2%'
+                                                        },
+                                                        Name: {
+                                                            title: 'Name',
+                                                            width: '20%'
+                                                        },
+                                                    },
+                                                    formCreated: function (event, data) {
+                                                        data.form.find('input[name="Code"]').addClass('validate[required]');
+                                                        data.form.find('input[name="Name"]').addClass('validate[required]');
+                                                        data.form.validationEngine();
+                                                    },
+                                                    formSubmitting: function (event, data) {
+                                                        return data.form.validationEngine('validate');
+                                                    },
+                                                    formClosed: function (event, data) {
+                                                        data.form.validationEngine('hide');
+                                                        data.form.validationEngine('detach');
+                                                    }
+
+                                            }, function (data) {
+                                                data.childTable.jtable('load');
+                                            });
+                                        });
+                                        return $img;
+                                    }
+                                },
+
+                                    //End of child table branches
+                                },
+                                formCreated: function (event, data) {
+                                    data.form.find('input[name="Code"]').addClass('validate[required]');
+                                    data.form.find('input[name="Name"]').addClass('validate[required]');
+                                    data.form.validationEngine();
+                                },
+                                formSubmitting: function (event, data) {
+                                    return data.form.validationEngine('validate');
+                                },
+                                formClosed: function (event, data) {
+                                    data.form.validationEngine('hide');
+                                    data.form.validationEngine('detach');
+                                }
+
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+
+                //End of child table branches
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Code"]').addClass('validate[required]');
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+    });
+</script>

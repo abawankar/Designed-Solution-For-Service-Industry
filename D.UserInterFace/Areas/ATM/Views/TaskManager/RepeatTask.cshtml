@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "Repeat Task";
+}
+
+<div id="repeattask"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var taskid = @ViewBag.taskid
+
+        $('#repeattask').jtable({
+            title: 'Repeat Task',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("RepeatTaskList","TaskManager")?taskid='+taskid,
+                updateAction: '@Url.Action("UpdateRepeat","TaskManager")',
+                deleteAction: '@Url.Action("DeleteRepeatTask","TaskManager")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                TaskDate: {
+                    title: 'Repeat Date',
+                    width: '1%',
+                    type: 'date',
+                    edit:false,
+                    display: function (data) {
+                        if (data.record.TaskDate != null)
+                            return moment(data.record.TaskDate).format('DD-MMM-YYYY')
+                    },
+                },
+                Status: {
+                    title: 'Status',
+                    width: '1%',
+                    options: { '1': 'Start', '2': 'Cancelled', '3': 'Completed' },
+                },
+                Notes: {
+                    title: 'Notes',
+                    width: '10%',
+                    type:'textarea'
+                },
+            },
+            formCreated: function (event, data) {
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#repeattask').jtable('load');
+    });
+</script>

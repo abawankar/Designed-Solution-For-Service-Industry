@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewBag.Title = "Manage User Roles";
+}
+
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Manage User Roles | 
+        @Html.ActionLink("New Role", "Create") | 
+        @Html.ActionLink("Users", "UserList", "Role")
+    </div>
+    <div class="panel-body" style="padding-bottom:0px;">
+        <div class="col-md-8">
+            <div class="panel panel-success">
+                <div class="panel-heading">Role Add To User</div>
+                <div class="panel-body">
+                    @using (Html.BeginForm("RoleAddToUser", "Role"))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true)
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">User Name</label>
+                            <div class="col-md-10">
+                                @Html.DropDownList("UserName", (IEnumerable<SelectListItem>)ViewBag.Users, "Select User", new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Role Name</label>
+                            <div class="col-md-10">
+                                @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select Role", new { @class = "form-control" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="submit" value="Save" class="btn btn-default" />
+                            </div>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" style="padding-bottom:0px;padding-top:0px;">
+        <div class="col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">Get Roles For a User</div>
+                <div class="panel-body">
+                    @using (Html.BeginForm("GetRoles", "Role"))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">User Name</label>
+                            <div class="col-md-10">
+                                @Html.DropDownList("UserName", (IEnumerable<SelectListItem>)ViewBag.Users, "Select User", new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="submit" value="Get Roles for this User" class="btn btn-default" />
+                            </div>
+                        </div>
+
+                    }
+
+                    @if (ViewBag.RolesForThisUser != null)
+                    {
+                        <div>
+                            <h3>Roles for this user </h3>
+                            <ol>
+                                @foreach (string s in ViewBag.RolesForThisUser)
+                                {
+                                    <li>@s</li>
+                                }
+                            </ol>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" style="padding-bottom:0px;padding-top:0px;">
+        <div class="col-md-8">
+            <div class="panel panel-danger">
+                <div class="panel-heading">Delete a User From a Role</div>
+                <div class="panel-body">
+                    @using (Html.BeginForm("DeleteRoleForUser", "Role"))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true)
+
+                        <p>
+                            Username : @Html.TextBox("UserName",null, new { @class = "search-box" })
+                            Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select ...", new { @class = "search-box" })
+
+                        </p>
+
+                        <input type="submit" value="Delete this user from Role" />
+                    }
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+

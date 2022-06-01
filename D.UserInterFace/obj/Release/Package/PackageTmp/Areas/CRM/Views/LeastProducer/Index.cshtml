@@ -1,0 +1,352 @@
+﻿@{
+    ViewBag.Title = "Least Producer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    a
+    {
+        cursor:pointer;
+    }
+</style>
+
+<div class="filtering">
+    @Html.ActionLink("Dashboard","Index","Home") 
+     @Html.DropDownList("acttype",new SelectList((ViewBag.acttype) as SelectList,"Value","Text"),"Account Type") 
+    @Html.DropDownList("branch",new SelectList((ViewBag.branch) as SelectList,"Value","Text"),"Branch") 
+    @Html.DropDownList("Country",new SelectList((ViewBag.Country) as SelectList,"Value","Text"),"Country") 
+    @Html.DropDownList("city",new SelectList((ViewBag.city) as SelectList,"Value","Text"),"City") 
+    <input type="button" id="filter" value="Filter" />
+    <input type="button" id="refresh" value="Refresh" />
+</div>
+
+<div class="filtering" style="height:22px;">
+    <div style="width:80px;float:right;" class='red'><a id="6month">6 Months</a></div>
+    <div style="width:80px;float:right;" class='orange'><a id="90days">90 days</a> </div>
+    <div style="width:80px;float:right;" class='yellow'><a id="30days">30 days</a></div>
+    <div style="width:150px;float:right" class='yellow'>No business within:</div>
+</div>
+
+
+<div id="table"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#table').jtable({
+            title: 'Least Producer',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '2%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                AccountName: {
+                    title: 'AccountName',
+                    width: '10%'
+                },
+                Country: {
+                    title: 'Country',
+                    width: '10%'
+                },
+                City: {
+                    title: 'City',
+                    width: '10%'
+                },
+                Business: {
+                    title: 'Business',
+                    width: '10%',
+                    list:false,
+                    display: function (data) {
+                        return '<div style="float:left">' + addCommas(data.record.Business.toFixed(2)) + '</div>'
+                    }
+                },
+                Owner: {
+                    title: 'Owner',
+                    width: '10%'
+                },
+                Date: {
+                    title: 'Creation Date',
+                    type: 'date',
+                    width: '2%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                Days: {
+                    title: 'Days',
+                    width: '1%',
+                    display: function (data) {
+                        if (data.record.Days <=30)
+                            return "<div class='yellow'>" + data.record.Days + "</div>";
+                        if (data.record.Days >30 && data.record.Days <=90)
+                            return "<div class='orange'>" + data.record.Days + "</div>";
+                        if (data.record.Days >90)
+                            return "<div class='red'>" + data.record.Days + "</div>";
+                    }
+                },
+                mail: {
+                    title: '',
+                    width: '0.1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<img title="Send Mail" class="child-opener-image" src="Content/Images/mail.png" width=20 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("Mail", "CreateMail", "NewAccount")').attr('href');
+                            url = url + "?id=" + data.record.ActId +"&type=L";
+                            window.location.href = url;
+                        });
+                        return $img;
+                    }
+                 },
+                Files: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var branch = $("#branch").val();
+                        var $img = $('<img title="Files" class="child-opener-image" src="Content/Images/file.png" width=20 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.AccountName + " - Files",
+                                paging: true,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("FileList")?id=' + data.record.AccountId +'&branch=' + branch,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Branch: {
+                                        title: 'Branch',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.Branch.Name;
+                                        }
+                                    },
+                                    FileHandler: {
+                                        title: 'File Handler',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.FileHandler.EmpName;
+                                        }
+                                    },
+                                    Nature: {
+                                        title: 'Nature',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.Nature.Name;
+                                        }
+                                    },
+                                    ClientName: {
+                                        title: 'Client',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.ClientName.Name;
+                                        }
+                                    },
+                                    RequestDate: {
+                                        title: 'Request Date',
+                                        type: 'date',
+                                        width: '2%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return moment(data.record.RequestDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    FileNumber: {
+                                        title: 'FileNumber',
+                                        width: '1%'
+                                    },
+                                    ContactName: {
+                                        title: 'ContactName',
+                                        width: '2%',
+                                    },
+                                    CheckinDate: {
+                                        title: 'Check In',
+                                        type: 'date',
+                                        width: '3%',
+                                        display: function (data) {
+                                            return moment(data.record.CheckinDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    CheckOutDate: {
+                                        title: 'Check Out',
+                                        type: 'date',
+                                        width: '3%',
+                                        display: function (data) {
+                                            return moment(data.record.CheckOutDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    StatusId: {
+                                        title: 'Status',
+                                        width: '2%',
+                                        options: '@Url.Action("GetStatusOptions","EnquiryStatus")',
+                                        display: function (data) {
+                                            if (data.record.StatusId == 1)
+                                                return "<div class='proposal'>" + "PROPOSAL STAGE" + "</div>";
+                                            if (data.record.StatusId == 2)
+                                                return "<div class='active'>" + 'ACTIVE' + "</div>";
+                                            if (data.record.StatusId == 3)
+                                                return "<div class='active'>" + 'POTENTIAL' + "</div>";
+                                            if (data.record.StatusId == 4)
+                                                return "<div class='confirmed'>" + 'CONFIRMED' + "</div>";
+                                            if (data.record.StatusId == 5)
+                                                return "<div class='confirmed'>" + 'CONTRACTED' + "</div>";
+                                            if (data.record.StatusId == 6)
+                                                return "<div class='confirmed'>" + 'OPERATED' + "</div>";
+                                            if (data.record.StatusId == 7)
+                                                return "<div class='confirmed'>" + 'CLOSED' + "</div>";
+                                            if (data.record.StatusId == 8)
+                                                return "<div class='cancelled'>" + 'INACTIVE' + "</div>";
+                                            if (data.record.StatusId == 9)
+                                                return "<div class='cancelled'>" + 'CANCELLED' + "</div>";
+                                        }
+                                    },
+                                    EventName: {
+                                        title: 'EventName',
+                                        width: '2%',
+                                    },
+                                    PaxNo: {
+                                        title: 'No of Pax',
+                                        width: '2%',
+                                    },
+                                    ContractValue: {
+                                        title: 'Contract Value',
+                                        width: '2%',
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.ContractValue.toFixed(2) + '</div>';
+                                        }
+                                    },
+                                    ContractCost: {
+                                        title: 'Contract Costs',
+                                        width: '2%',
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.ContractCost.toFixed(2) + '</div>';
+                                        }
+                                    },
+                                    Margin: {
+                                        title: 'Margin',
+                                        width: '0.5%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.Margin.toFixed(2) + '</div>';
+                                        }
+                                    },
+                                    MarginP: {
+                                        title: 'Margin%',
+                                        width: '1%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.MarginP.toFixed(2) + '</div>';
+                                        }
+                                    },
+                                    Remarks: {
+                                        title: 'Remarks',
+                                        width: '2%',
+                                        type: 'textarea',
+                                        list: false
+                                    },
+
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/excel.png',
+                                        text: 'Export To Excel',
+                                        click: function () {
+                                            var r = confirm("Do you want to export?");
+                                            if (r == true) {
+                                                var url = "LeastProducer/ExportFiles";
+                                                window.open(url);
+                                            }
+                                        }
+                                    }]
+                                },
+
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "LeastProducer/ExportLeastProducer";
+                            window.open(url);
+                        }
+
+                    }
+                }]
+            },
+        });
+        $('#table').jtable('load');
+
+        $("#90days").click(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                acttype: $("#acttype").val(), city: $("#city").val(), country: $("#Country").val(), branch: $("#branch").val(), name: "90"
+            });
+        });
+        $("#30days").click(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                acttype: $("#acttype").val(), city: $("#city").val(), country: $("#Country").val(), branch: $("#branch").val(), name: "30"
+            });
+        });
+        $("#6month").click(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                acttype: $("#acttype").val(), city: $("#city").val(), country: $("#Country").val(), branch: $("#branch").val(),name: "6"
+            });
+        });
+
+        $("#filter").click(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                acttype: $("#acttype").val(), city: $("#city").val(), country: $("#Country").val(), branch: $("#branch").val()
+            });
+        });
+
+        $("#refresh").click(function (e) {
+            $("#city").val(0);
+            $("#Country").val(0);
+            $("#branch").val(0);
+            $("#acttype").val(0);
+            e.preventDefault();
+            $('#table').jtable('load');
+        });
+
+    });
+</script>

@@ -1,0 +1,69 @@
+﻿@{
+    ViewBag.Title = "Account Type List";
+}
+
+<div id="actTypeTable"></div>
+<input type="hidden" id="acttypeid" value="@ViewBag.actid" />
+<button type="button" role="button" aria-disabled="false" id="actType" title="Add Account Type" > 
+ Add
+</button>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#actTypeTable').jtable({
+            title: 'Account Type',
+            paging: false,
+            sorting: true,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick:false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("SelectAccounType","NewAccount")?id=' + $("#acttypeid").val(),
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Name: {
+                    title: 'Account Type',
+                    width: '10%'
+                },
+            },
+            selectionChanged: function () {
+                var $selecedRows = $('#actTypeTable').jtable('selectedRows');
+            }
+        });
+        $('#actTypeTable').jtable('load');
+
+        $('#actType').button().click(function () {
+            var actid = $("#acttypeid").val();
+            var $selecedRows = $('#actTypeTable').jtable('selectedRows');
+            var list = actid;
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+            $.ajax({
+                url: "@Url.Action("AddAccountType","NewAccount")",
+                type: 'POST',
+                datatype: 'HTML',
+                data: { id: actid, list: list },
+                success: function (data) {
+                    alert("Account Type Added");
+                    $('#actTypeTable').jtable('load', {
+                        id: $('#acttypeid').val()
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+        
+    });
+</script>

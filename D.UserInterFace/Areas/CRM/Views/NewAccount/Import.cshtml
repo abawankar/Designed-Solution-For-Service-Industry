@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = "Import";
+}
+
+@using (Html.BeginForm("ImportAccount", "NewAccount", FormMethod.Post, new { id = "newtask", enctype = "multipart/form-data" }))
+{
+    <h3>Please selcect comma delimited csv file only</h3>
+    <p><a href="../../Upload/ImportAccountFormatfile.xlsx">Download File Format</a></p>
+    
+    <input type="file" name="imageFile" />
+    <input type="submit" value="Upload" />
+}
+

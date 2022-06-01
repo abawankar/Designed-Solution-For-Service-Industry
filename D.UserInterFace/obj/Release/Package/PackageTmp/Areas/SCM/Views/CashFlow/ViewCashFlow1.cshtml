@@ -1,0 +1,368 @@
+﻿@model ViewUI.Models.Report.CashFlowModel
+
+@{
+    ViewBag.Title = "ViewCashFlow";
+}
+
+<style type="text/css">
+   .tb
+    {
+        text-align:right;
+        border: 1px solid #989494;
+        background-color: #f9f6f6;
+        padding:4px;
+        color:#000000;
+    }
+    .tf
+    {
+        padding:4px;
+        border:1px solid #989494;
+        color:#fff;
+        font-weight:bold;
+        background-color:#808080;
+        text-align:center;
+    }
+
+    .footer
+    {
+        padding:4px;
+        border:1px solid #989494;
+        color:#fff;
+        background-color:#808080;
+        text-align:right;
+    }
+    .alignleft
+    {
+        text-align:left;
+    }
+</style>
+
+@{
+    var incoming = from r in Model.Receivable
+                   group r by r.NBO into s
+                   select s;
+               
+    var outgoing = from r in Model.Payable
+               group r by r.NBO into s
+               select s;
+             
+}
+<table>
+
+    <thead>
+    <tr>
+        <th class="tf">Project#</th>
+        <th class="tf">PM</th>
+        <th class="tf">Agent / Supplier</th>
+        <th class="tf">Event Name</th>
+        <th class="tf">CheckIn</th>
+        <th class="tf">CheckOut</th>
+        <th class="tf">Total Incoming / Outgoing</th>
+        <th class="tf">Total Received / Paid</th>
+        <th class="tf">Balance Due</th>
+        <th class="tf">Due Date</th>
+        <th class="tf">Amount Due</th>
+        <th class="tf">Over Due</th>
+        <th class="tf">@(System.DateTime.Now.AddMonths(1).ToString("MMM-yy"))</th>
+        <th class="tf">@(System.DateTime.Now.AddMonths(2).ToString("MMM-yy"))</th>
+        <th class="tf">@(System.DateTime.Now.AddMonths(3).ToString("MMM-yy"))</th>
+        <th class="tf">@(System.DateTime.Now.AddMonths(4).ToString("MMM-yy"))</th>
+        <th class="tf">@(System.DateTime.Now.AddMonths(5).ToString("MMM-yy"))</th>
+    </tr>
+    </thead>
+
+    <!-- Incoming -->
+    <tr><td id="showIncoming" class="tb" style="cursor:pointer; text-align:left;background-color:#28ac53;color:#fff;" colspan="17">Incoming +</td></tr>
+    <tbody id="incoming" style="display:none;">
+        @foreach (var item in incoming.Where(x=>x.Sum(y=>y.Amount-y.AmountReceived) !=0))
+        {
+            <tr>
+                <td class="tb alignleft">@item.Key.FileNumber</td>
+                <td class="tb alignleft" style="width:100px">@item.Key.FileHandler.EmpName</td>
+                <td class="tb alignleft" style="width:120px">@item.Key.ClientName.Name</td>
+                <td class="tb alignleft" style="width:80px">@item.Key.EventName</td>
+                <td class="tb" style="width:75px">@Convert.ToDateTime(item.Key.CheckinDate).ToString("dd MMM yyyy")</td>
+                <td class="tb" style="width:75px">@Convert.ToDateTime(item.Key.CheckOutDate).ToString("dd MMM yyyy")</td>
+                <td class="tb" style="width:70px">@item.Sum(x=>x.Amount).ToString("##,##0")</td>
+                <td class="tb" style="width:70px">@item.Sum(x=>x.AmountReceived).ToString("##,##0")</td>
+                <td class="tb" style="width:70px">@item.Sum(x=>x.Amount-x.AmountReceived).ToString("##,##0")</td>
+                <td colspan="3" class="tb"></td>
+                <td colspan="5" class="tb"></td>
+            </tr>
+            foreach (var item1 in item)
+            {
+                <tr>
+                    <td class="tb" colspan="9"></td>
+                    <td class="tb" style="width:75px">@Convert.ToDateTime(item1.DueDate).ToString("dd MMM yyyy")</td>
+                    @if (item.Sum(x => x.Amount - x.AmountReceived) == 0) { 
+                        <td class="tb">0</td>
+                    }
+                    else{
+                        <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                        if (Convert.ToDateTime(item1.DueDate) < System.DateTime.Today)
+                        {
+                            <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>   
+                            <td class="tb"></td>
+                            <td class="tb"></td>
+                            <td class="tb"></td>
+                            <td class="tb"></td>    
+                            <td class="tb"></td>
+                        }
+                        else {
+                            bool flag=false;
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(1).ToString("MM-yy"))
+                            { 
+                                <td class="tb">0</td>
+                                <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>    
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(2).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(3).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(4).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                                <td class="tb"></td>
+                                flag = true;
+                            }
+                             if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(5).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>    
+                                <td class="tb">@Convert.ToDouble(item1.Amount-item1.AmountReceived).ToString("##,##0")</td>
+                                flag = true;
+                            }
+                            if (flag == false)
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                            }
+                        }
+                    }
+                    
+                </tr>
+            }
+
+        }
+    </tbody>
+
+    <tr>
+        <td class="tf" colspan="6">Total Incoming</td>
+        <td class="footer">@Convert.ToDouble(incoming.Sum(x => x.Sum(y => y.Amount))).ToString("##,##0")</td>
+        <td class="footer">@Convert.ToDouble(incoming.Sum(x => x.Sum(y => y.AmountReceived))).ToString("##,##0")</td>
+        <td class="footer">@Convert.ToDouble(incoming.Sum(x => x.Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")</td>
+        <td class="footer"></td>
+        <td class="footer">@Convert.ToDouble(incoming.Sum(x => x.Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")</td>
+        <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => o.DueDate < System.DateTime.Now).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(1).ToString("MM-yy")).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(2).ToString("MM-yy")).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(3).ToString("MM-yy")).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(4).ToString("MM-yy")).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+         <td class="footer">
+            @Convert.ToDouble(incoming.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(5).ToString("MM-yy")).Sum(y => y.Amount - y.AmountReceived))).ToString("##,##0")
+        </td>
+    </tr>
+
+    <!-- Outgoing -->
+    <tr><td id="showOutgoing" class="tb" style="cursor:pointer;text-align:left;background-color:#f00;color:#fff;" colspan="17">Outgoing -</td></tr>
+    <tbody id="outgoing" style="display:none;">
+        @foreach (var item in outgoing)
+        {
+            <tr>
+                <td class="tb">@item.Key.FileNumber </td>
+                <td class="tb">@item.Key.FileHandler.EmpName</td>
+                <td class="tb"></td>
+                <td class="tb">@item.Key.EventName</td>
+                <td class="tb">@Convert.ToDateTime(item.Key.CheckinDate).ToString("dd MMM yyyy")</td>
+                <td class="tb">@Convert.ToDateTime(item.Key.CheckOutDate).ToString("dd MMM yyyy")</td>
+                <td class="tb">@item.Sum(x => x.Amount)</td>
+                <td class="tb">@item.Sum(x => x.AmountPaid)</td>
+                <td class="tb">@item.Sum(x => x.Amount - x.AmountPaid)</td>
+                <td colspan="3" class="tb"></td>
+                <td colspan="5" class="tb"></td>
+            </tr>
+            foreach (var item1 in item)
+            {
+                <tr>
+                    <td class="tb" colspan="2"></td>
+                    <td class="tb">@item1.PayingTo.Name </td>
+                    <td colspan="6" class="tb"></td>
+                    <td class="tb">@Convert.ToDateTime(item1.DueDate).ToString("dd MMM yyyy")</td>
+                    @if (item.Sum(x => x.Amount - x.AmountPaid) == 0)
+                    { 
+                        <td class="tb">0</td>
+                    }
+                    else
+                    {
+                        <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                        if (Convert.ToDateTime(item1.DueDate) < System.DateTime.Today)
+                        {
+                            <td class="tb">@(item1.Amount - item1.AmountPaid)</td>   
+                        }
+                        else
+                        {
+                            bool flag = false;
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(1).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(2).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                flag = true;
+
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(3).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>    
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(4).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                                <td class="tb"></td>
+                                flag = true;
+                            }
+                            if (Convert.ToDateTime(item1.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(5).ToString("MM-yy"))
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb">@(item1.Amount - item1.AmountPaid)</td>
+                                flag = true;
+                            }
+                            if (flag == false)
+                            { 
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                                <td class="tb"></td>
+                            }
+                        }
+
+                    }
+                    
+                </tr>
+            }
+        }
+    </tbody>
+
+    <tr>
+        <td class="tf" colspan="6">Total Outgoing</td>
+        <td class="footer">@Convert.ToDouble(outgoing.Sum(x => x.Sum(y => y.Amount))).ToString("##,##0")</td>
+        <td class="footer">@Convert.ToDouble(outgoing.Sum(x => x.Sum(y => y.AmountPaid))).ToString("##,##0")</td>
+        <td class="footer">@Convert.ToDouble(outgoing.Sum(x => x.Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")</td>
+        <td class="footer"></td>
+        <td class="footer">@Convert.ToDouble(outgoing.Sum(x => x.Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")</td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x => x.Where(o => o.DueDate < System.DateTime.Now).Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(1).ToString("MM-yy")).Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(2).ToString("MM-yy")).Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(3).ToString("MM-yy")).Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x => x.Where(o => Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(4).ToString("MM-yy")).Sum(y => y.Amount - y.AmountPaid))).ToString("##,##0")
+        </td>
+        <td class="footer">
+            @Convert.ToDouble(outgoing.Sum(x=>x.Where(o=>Convert.ToDateTime(o.DueDate).ToString("MM-yy") == System.DateTime.Now.AddMonths(5).ToString("MM-yy")).Sum(y=>y.Amount-y.AmountPaid))).ToString("##,##0")
+        </td>
+    </tr>
+   
+</table>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#showIncoming').toggle(
+        function () {
+            $('#incoming').slideDown("slow");
+        },
+        function () {
+            $('#incoming').slideUp("slow");
+        });
+
+        $('#showOutgoing').toggle(
+       function () {
+           $('#outgoing').slideDown("slow");
+       },
+       function () {
+           $('#outgoing').slideUp("slow");
+       });
+    });
+
+</script>
+
+
+

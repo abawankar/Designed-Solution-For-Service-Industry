@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Message = "Leads";
+}
+
+<div class="filtering">
+      @Html.ActionLink("Submit Data","ProcessContactImport","PotentialAccount")
+</div>
+
+<div id="table"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#table').jtable({
+            title: 'Leads',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("ImportContactList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Salutation: {
+                    title: 'Salutation',
+                    width: '2%'
+                },
+                FirstName: {
+                    title: 'FirstName',
+                    width: '2%'
+                },
+                MiddleName: {
+                    title: 'MiddleName',
+                    width: '2%',
+                },
+                LastName: {
+                    title: 'LastName',
+                    width: '2%'
+                },
+                Title: {
+                    title: 'Title',
+                    width: '2%'
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '2%'
+                },
+                PhoneDirect: {
+                    title: 'Phone Direct',
+                    width: '5%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '2%'
+                },
+                EmailOpt: {
+                    title: 'EmailOpt',
+                    width: '2%',
+                    type: 'checkbox',
+                    values: { 'false': 'Yes', 'true': 'No' },
+                    defaultValue: 'false',
+                },
+                Messanger: {
+                    title: 'Messenger',
+                    width: '5%'
+                },
+                Mobile: {
+                    title: 'Mobile',
+                    width: '2%'
+                },
+                Department: {
+                    title: 'Department',
+                    width: '2%'
+                },
+                Street: {
+                    title: 'Street',
+                    width: '5%',
+                    type: 'textarea',
+                    list: false
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                StateProvince: {
+                    title: 'StateProvince',
+                    width: '2%',
+                    list: false
+                },
+                Country: {
+                    title: 'Country',
+                    width: '2%',
+                    display: function (e) {
+                        return e.record.Country.Name;
+                    }
+                },
+                ZipPostalCode: {
+                    title: 'ZipPostalCode',
+                    width: '2%',
+                    list: false
+                },
+                
+
+            },
+            
+            
+        });
+        $('#table').jtable('load');
+
+      
+    });
+</script>

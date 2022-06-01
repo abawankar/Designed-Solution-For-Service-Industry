@@ -1,0 +1,315 @@
+﻿@{
+    ViewBag.Title = "Budget";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home")
+        @Html.DropDownList("Year", new SelectList((ViewBag.Year) as SelectList, "Value", "Text"), "Year", new {@class="search-box" })
+        @Html.DropDownList("branch", new SelectList((ViewBag.branch) as SelectList, "Value", "Text"), "Branch", new { @class = "search-box" })
+        @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "File Handler", new { @class = "search-box" })
+        @Html.DropDownList("Nature", new SelectList((ViewBag.Nature) as SelectList, "Value", "Text"), "Nature", new { @class = "search-box" })
+
+        <button type="button" id="filter" value="Filter" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+        </button>
+        <button type="button" id="refresh" value="Refresh" class="btn btn-info btn-sm">
+            <span class="fa fa-refresh" aria-hidden="true"></span> Refresh
+        </button>
+
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $('#table').jtable({
+            title: 'Budget',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Year: {
+                    title: 'Year',
+                    width: '2%',
+                    options: '@Url.Action("GetYearOptions")'
+                },
+                NatureId: {
+                    title: 'Nature',
+                    width: '2%',
+                    options: '@Url.Action("GetBudgetNature","BusinessNature")'
+                },
+                BranchId: {
+                    title: 'Branch',
+                    width: '2%',
+                    options: '@Url.Action("GetBranch","Company",new { area = string.Empty },null)'
+                },
+                EmpId: {
+                    title: 'File Handler',
+                    width: '2%',
+                    dependsOn: 'BranchId',
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return '/Company/GetNBOEmployee?branid=0';
+                        }
+                        return '/Company/GetNBOEmployee?branid=' + data.dependedValues.BranchId;
+                    }
+                },
+                ContractValue: {
+                    title: 'Sales Target',
+                    width: '2%',
+                    edit: false,
+                    create:false,
+                    display: function (data) {
+                        var sum = 0;
+                        if (data.record.BudTrn != null) {
+                            $.each(data.record.BudTrn, function (data, record) {
+                                sum += record.ContractValue;
+                            });
+                        }
+                        return '<div style="text-align:right;">' + sum.toFixed(2) + '</div>';
+                    }
+                },
+                ContractCost: {
+                    title: 'Cost Target',
+                    width: '2%',
+                    edit: false,
+                    create: false,
+                    display: function (data) {
+                        var sum = 0;
+                        if (data.record.BudTrn != null) {
+                            $.each(data.record.BudTrn, function (data, record) {
+                                sum += record.ContractCost;
+                            });
+                        }
+                        return '<div style="text-align:right;">' + sum.toFixed(2) + '</div>';
+                    }
+                },
+                Margin: {
+                    title: 'Margin Target',
+                    width: '2%',
+                    edit: false,
+                    create: false,
+                    display: function (data) {
+                        var sum = 0;
+                        if (data.record.BudTrn != null) {
+                            $.each(data.record.BudTrn, function (data, record) {
+                                sum += record.Margin;
+                            });
+                        }
+                        return '<div style="text-align:right;">' + sum.toFixed(2) + '</div>';
+                    }
+                },
+                MarginP: {
+                    title: 'Margin % Target',
+                    width: '2%',
+                    edit: false,
+                    create: false,
+                    display: function (data) {
+                        var margin = 0;
+                        var value = 0;
+                        var marginp = 0;
+                        if (data.record.BudTrn != null) {
+                            $.each(data.record.BudTrn, function (data, record) {
+                                margin += record.Margin;
+                                value += record.ContractValue;
+                            });
+                        }
+                        if (margin != 0 && value != 0) marginp = margin / value * 100;
+                        return '<div style="text-align:right;">' + marginp.toFixed(2) + '</div>';
+                    }
+                },
+                //Child table for Branches
+                Trn: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Monthly Budget" class="child-opener-image" src="/Content/Images/budget.png" width=22 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.Employee.EmpName + " - Yearly Budget",
+                                paging: false,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("ListBudgetTrn")?butdgetId=' + data.record.Id,
+                                    updateAction: '@Url.Action("EditBudgetTrn")',
+                                    },
+                                    fields: {
+                                        Id: {
+                                            title: 'Id',
+                                            width: '1%',
+                                            key: true,
+                                            create: false,
+                                            edit: false,
+                                            list: false
+                                        },
+                                        Month: {
+                                            title: 'Code',
+                                            width: '2%',
+                                            display: function (data) {
+                                                return '<strong>'+data.record.Month + '</strong>'
+                                            },
+                                            input: function (data) {
+                                                if (data.value) {
+                                                    return '<input type="text" readonly class="jtable-input-readonly" name="Month" value="' + data.value + '"/>';
+                                                }
+                                            }
+                                        },
+                                        ContractValue: {
+                                            title: 'Sales Target',
+                                            width: '2%',
+                                            display: function (data) {
+                                                return '<div style="text-align:right">' + data.record.ContractValue.toFixed(2) + '</div>';
+                                            }
+
+                                        },
+                                        ContractCost: {
+                                            title: 'Costs Target',
+                                            width: '2%',
+                                            display: function (data) {
+                                                return '<div style="text-align:right">' + data.record.ContractCost.toFixed(2) + '</div>';
+                                            }
+                                        },
+                                        Margin: {
+                                            title: 'Margin Target',
+                                            width: '2%',
+                                            create: false,
+                                            edit: false,
+                                            display: function (data) {
+                                                return '<div style="text-align:right">' + data.record.Margin.toFixed(2) + '</div>';
+                                            }
+                                        },
+                                        MarginP: {
+                                            title: 'Margin% Target',
+                                            width: '2%',
+                                            create: false,
+                                            edit: false,
+                                            display: function (data) {
+                                                return '<div style="text-align:right">' + data.record.MarginP.toFixed(2) + '</div>';
+                                            }
+                                        },
+                                    },
+                                    formCreated: function (event, data) {
+                                        data.form.find('input[name="Code"]').addClass('validate[required]');
+                                        data.form.find('input[name="Name"]').addClass('validate[required]');
+                                        data.form.validationEngine();
+                                    },
+                                    formSubmitting: function (event, data) {
+                                        return data.form.validationEngine('validate');
+                                    },
+                                    formClosed: function (event, data) {
+                                        data.form.validationEngine('hide');
+                                        data.form.validationEngine('detach');
+                                    }
+
+                                }, function (data) {
+                                    data.childTable.jtable('load');
+                                });
+                            });
+                            return $img;
+                        }
+                    },
+
+                //End of child table branches
+
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="FileNumber"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $("#refresh").click(function (e) {
+            $('#Year').val('');
+            $('#branch').val('');
+            $('#Emp').val('');
+            $('#Nature').val('');
+            e.preventDefault();
+            $('#table').jtable('load');
+        })
+
+        $("#Year").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                year: $('#Year').val(),col:"year"
+            });
+        })
+
+        $("#Emp").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                emp: $('#Emp').val(), col: "emp"
+            });
+        })
+
+        $("#Nature").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                nature: $('#Nature').val(), col: "nature"
+            });
+        })
+
+        $("#filter").on('click', (function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                year: $('#Year').val(),branch:$('#branch').val(), emp: $('#Emp').val(), nature: $('#Nature').val(),col:"filter"
+            });
+
+        }));
+
+        $("#branch").change(function (e) {
+            var id = $('#branch').val();
+            e.preventDefault();
+            var emp = $('#Emp');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetEmployeeNBO","Company")",
+                data: { branid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">File Handler</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.Id + "\">" + item.EmpName + "</option>";
+                    });
+                    emp.html("");
+                    emp.html(items);
+                },
+                error: function () {
+                }
+            });
+            $('#table').jtable('load', {
+                branch: $('#branch').val(),col:"branch"
+            });
+         });
+    });
+</script>

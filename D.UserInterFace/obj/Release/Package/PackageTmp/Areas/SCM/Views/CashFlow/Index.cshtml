@@ -1,0 +1,126 @@
+﻿@{
+    ViewBag.Title = "Cash Flow Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.theme.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<div class="filtering">
+   
+</div>
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.DropDownList("branch", new SelectList((ViewBag.branch) as SelectList, "Value", "Text"), "Branch",new {@class="search-box" })
+        Due From:<input type="date" id="dateFrom" class="search-box" />To:<input type="date" id="dateTo" class="search-box" />
+        
+
+        <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+            <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+        </button>
+    </div>
+    <div class="panel-heading">
+
+       <table class="table-condensed">
+           <tr>
+               <td>Client</td> <td><div id="client" class="search-box"></div></td>
+               <td>Supplier:</td><td> <div id="supplier" class="search-box"></div></td>
+               <td colspan="2"> <span class="fa fa-print"></span><a href='javascript:window.print()'> Print CashFlow</a></td>
+           </tr>
+       </table>
+    </div>
+    <div class="panel-body">
+        <div id="cash"> @{Html.RenderAction("ViewCashFlow");}  </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $(function () {
+            $.getJSON("/Client/GetClient", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#client").igCombo({
+                    width: "270px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+        $(function () {
+            $.getJSON("/Supplier/GetSupplier", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#supplier").igCombo({
+                    width: "270px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+
+        $("#export").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val()
+
+            var client = $("#client").igCombo("values");
+            var clientid = client.toString();
+
+            var supplier = $("#supplier").igCombo("values");
+            var supplierid = supplier.toString();
+
+            var url = "CashFlow/Export?branch=" + $('#branch').val() + "&supplier=" + supplierid + "&client=" + clientid + "&dateFrom=" + datefrom + "&dateTo=" + dateto;
+            window.open(url);
+        });
+
+        $("#filter").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val()
+            var empid = $('#Emp').val();
+            var branchid = $('#branch').val();
+            var client = $("#client").igCombo("values");
+            var clientid = client.toString();
+
+            var supplier = $("#supplier").igCombo("values");
+            var supplierid = supplier.toString();
+
+            e.preventDefault();
+            var act = $('#cash');
+            act.hide();
+            $('#loading').show();
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("ViewCashFlow","CashFlow")",
+                data: { branid: branchid, client: clientid, supplier: supplierid,dateFrom:datefrom,dateTo:dateto },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+        });
+    });
+</script>
+

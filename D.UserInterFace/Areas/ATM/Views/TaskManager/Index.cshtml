@@ -1,0 +1,585 @@
+﻿@{
+    ViewBag.Title = "ATM";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/js/jquery.ui.timepicker.css")" rel="stylesheet" type="text/css" />
+    <link href="~/Content/SidebarFilter.css" rel="stylesheet" />
+}
+@section Script{
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/jquery.ui.timepicker.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.ActionLink("Past Activity", "PendingTask")
+    </div>
+    <div class="panel-body" style="padding-bottom:0px;">
+        @using (Html.BeginForm("CreateTask", "TaskManager", FormMethod.Post, new { id = "newtask", enctype = "multipart/form-data" }))
+        {
+            <div class="row">
+                <div class="col-sm-5">
+                    <div class="panel panel-success nomargin">
+                        <div class="panel-heading">Schedule Activity
+                            <button type="submit" id="submit" value="Create Task" class="btn btn-sm pull-right btn-success" aria-label="Left Align">
+                                <span class="fa fa-clock-o" aria-hidden="true"></span> Create 
+                                <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div class="panel-body" style="padding-bottom:0px;">
+                            <table>
+                                <tr>
+                                    <td>Type:</td>
+                                    <td>@Html.DropDownList("Type", new SelectList((ViewBag.Type) as SelectList, "Value", "Text"),null,new {@class="search-box" })</td>
+                                    <td colspan="4"> <input style="display:none;" type="checkbox" id="isReport" name="isReport" value="1" /></td>
+                                    <td rowspan="9" style="vertical-align:top;padding:0 10px;"></td>
+
+                                </tr>
+                                <tr>
+                                    <td class="compulsory">Task:</td>
+                                    <td colspan="5">
+                                        <textarea name="task" id="task" class="search-box" style="width:380px;">@ViewBag.Subject</textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Notes:</td>
+                                    <td colspan="5"><input type="text" name="notes" class="search-box" style="width:380px" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Status:</td>
+                                    <td colspan="5">@Html.DropDownList("Status", new SelectList((ViewBag.Status) as SelectList, "Value", "Text"),null,new {@class="search-box" })</td>
+                                </tr>
+                                <tr>
+                                    <td class="compulsory">Start:</td>
+                                    <td><input class="search-box" type="date" name="start" id="startdate" value="@ViewBag.today" /></td>
+                                    <td>H:</td>
+                                    <td>@Html.DropDownList("StartH", new SelectList((ViewBag.StartH) as SelectList, "Value", "Text"),null,new {@class="search-box" })</td>
+                                    <td>M:</td>
+                                    <td>@Html.DropDownList("StartM", new SelectList((ViewBag.StartM) as SelectList, "Value", "Text"), null, new { @class = "search-box" })</td>
+                                </tr>
+                                <tr>
+                                    <td>Due:</td>
+                                    <td><input class="search-box" type="date" name="due" id="duedate" value="@ViewBag.today" /></td>
+                                    <td>H:</td>
+                                    <td>@Html.DropDownList("DueH", new SelectList((ViewBag.DueH) as SelectList, "Value", "Text"), null, new { @class = "search-box" })</td>
+                                    <td>M:</td>
+                                    <td>@Html.DropDownList("DueM", new SelectList((ViewBag.DueM) as SelectList, "Value", "Text"), null, new { @class = "search-box" })</td>
+                                </tr>
+                                <tr>
+                                    <td>Compl:</td>
+                                    <td><input class="search-box" type="date" name="compl" value="@ViewBag.today" /></td>
+                                    <td>H:</td>
+                                    <td>@Html.DropDownList("ComplH", new SelectList((ViewBag.ComplH) as SelectList, "Value", "Text"), null, new { @class = "search-box" })</td>
+                                    <td>M:</td>
+                                    <td>@Html.DropDownList("ComplM", new SelectList((ViewBag.ComplM) as SelectList, "Value", "Text"), null, new { @class = "search-box" })</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Assignee:</td>
+                                    <td colspan="3"><input name="Assignerlist" id="checkboxSelectCombo" /></td>
+                                    <td colspan="2"><input type="checkbox" id="isMail" name="isMail" value="1" />Send mail</td>
+                                </tr>
+                                <tr>
+                                    <td>Attachment:</td>
+                                    <td colspan="3">
+                                        <input type="file" name="fileUploader" class="search-box" /><br />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td colspan="5">
+                                        <div id="loading" style="display:none;">Mail Sending. Please wait...</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-sm-4 nopadding">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">Assign Job To Activity</div>
+                        <div class="panel-body">
+                            <table class="table-condensed">
+                                <tr>
+                                    <td>Job Number:<br /> @Html.DropDownList("Jobnumber", new SelectList((ViewBag.job) as SelectList, "Value", "Text"), "--None--", new { @class = "search-box" })</td>
+                                </tr>
+                                <tr>
+                                    <td><input placeholder="Client Name" type="text" id="clientname" name="clientname" readonly class="search-box" /></td>
+                                </tr>
+                                <tr>
+                                    <td><input placeholder="Event Name" type="text" id="eventname" name="eventname" readonly class="search-box" /></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    <div class="col-xs-8 nopadding">
+                                       Completed:<br />@Html.DropDownList("CompletePercentage", new SelectList((ViewBag.CompletePercentage) as SelectList, "Value", "Text"), null, new { @class = "search-box" })
+                                    </div>
+                                        <div class="col-xs-4 nopadding">
+                                            Location:<br />@Html.DropDownList("locationid", new SelectList((ViewBag.location) as SelectList, "Value", "Text"), null, new { @class = "search-box" })
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="col-xs-8 nopadding">
+                                            Actual Hours:<br />
+                                            H:<input class="search-box" value="0" type="text" name="actualH" id="actualH" style="width:40px;" />
+                                            M:<input class="search-box" value="0" type="text" name="actualM" id="actualM" style="width:40px;" />
+                                        </div>
+                                        <div class="col-xs-4 nopadding">
+                                            Other Cost<br /><input value="0" type="text" name="othercost" id="othercost" class="search-box" style="width:100px;" />
+                                        </div>
+                                  </td>
+                                </tr>
+                                                               
+                                <tr>
+                                    <td style="text-align:center;">
+                                       
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">Send Activity Report
+                            
+                        </div>
+                        <div class="panel-body nopadding">
+                            <div class="panel panel-info nopadding nomargin">
+                                <div class="panel-heading">
+                                    Start Date:<input type="date" name="dateReport" id="dateReport" value="@ViewBag.today" class="search-box" />
+                                </div>
+                                <div class="panel-heading heading-sm"> <i class="fa fa-user"></i> Send To User </div>
+                                <div style="padding-left:10px;">
+                                    <ul class="fltroptn" style="height:150px;">
+                                        @foreach (var e in ViewBag.Emp)
+                                        {
+                                            <li><span><input onclick="getfilter('emp')" type="checkbox" name="emp" value="@e.Value" /> @e.Text </span> </li>
+                                        }
+                                    </ul>
+                                </div>
+                                <div>
+                                    <button type="button" id="sendReport" value="Send" class="btn btn-success btn-sm pull-right" aria-label="Left Align">
+                                        <span class="fa fa-send" aria-hidden="true"></span> Send
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <div class="panel-body table-responsives" style="padding-top:0px;">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"> </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var emplist = new Array();
+    function getfilter(emp) {
+        var loopCounter = 0;
+        jQuery("input[name=" + emp + "]:checked").each
+        (
+            function () {
+                emplist[loopCounter] = jQuery(this).val();
+                loopCounter += 1;
+            }
+        );
+    }
+
+    $(document).ready(function () {
+        $('#loading').hide();
+        $(function () {
+            $.getJSON("/Employee/GetEmployee", function (jd) {
+                var data = JSON.parse(JSON.stringify(jd));
+                $("#checkboxSelectCombo").igCombo({
+                    width: "270px",
+                    dataSource: data,
+                    textKey: "Name",
+                    valueKey: "Id",
+                    multiSelection: "onWithCheckboxes"
+                });
+
+            });
+        });
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 800,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+
+        $('#table').jtable({
+            title: 'Activiy List',
+            async: false,
+            actions: {
+                listAction: '@Url.Action("TodayList")',
+                updateAction: '@Url.Action("Update")',
+                deleteAction: '@Url.Action("Delete")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Date: {
+                    title: 'Task Created',
+                    width: '2%',
+                    edit:false,
+                    display: function (data) {
+                        if (data.record.Date != null)
+                            return moment(data.record.Date).format("DD/MMM/YYYY");
+                    },
+                },
+                Type: {
+                    title: 'Type',
+                    width: '2%',
+                    options: { 'Task': 'Task', 'Meeting': 'Meeting'},
+                },
+                JobNumber: {
+                    title: 'Job',
+                    width: '2%',
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.JobNumber + '"/>';
+                    }
+                },
+                ClientName: {
+                    title: 'Client Name',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.ClientName + '"/>';
+                    }
+                },
+                EventName: {
+                    title: 'Event Name',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.EventName + '"/>';
+                    }
+                },
+                Task: {
+                    title: 'Task',
+                    width: '5%',
+                    type: 'textarea'
+                },
+                Notes: {
+                    title: 'Notes',
+                    width: '2%',
+                },
+                Assigner: {
+                    title: 'Assigner',
+                    width: '2%',
+                    edit: false,
+                    display: function (data) {
+                        return data.record.Assigneer.EmpName
+                    }
+                },
+                AssignerId: {
+                    title: 'Assigner',
+                    width: '2%',
+                    options: '@Url.Action("GetEmployeeList","Employee")',
+                    type:'hidden'
+                },
+                Assignee: {
+                    title: 'Assignee',
+                    width:'2%',
+                    edit: false,
+                    display:function(data) {
+                        var emp = "";
+                        if (data.record.Contacts != null) {
+                            $.each(data.record.Contacts, function (data, record) {
+                                if (emp == "") {
+                                    emp = record.EmpName;
+                                }
+                                else {
+                                    emp = emp + "," + record.EmpName;
+                                }
+                               
+                            });
+                        }
+                        return emp;
+                    }
+                },
+                Start: {
+                    title: 'Start Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Start != null)
+                        return moment(data.record.Start).format('DD-MMM-YYYY')
+                    },
+                },
+                StartTime: {
+                    title: 'Start Time(H:M:S)',
+                    width: '2%',
+                    list: false,
+                },
+                Due: {
+                    title: 'Due Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Due != null)
+                        return moment(data.record.Due).format('DD-MMM-YYYY')
+                    },
+                },
+                DueTime: {
+                    title: 'Due Time(H:M:S)',
+                    width: '2%',
+                    list: false
+                },
+                Compl: {
+                    title: 'Compl Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Compl != null)
+                            return moment(data.record.Compl).format('DD-MMM-YYYY')
+                    },
+                },
+                ComplTime: {
+                    title: 'Compl Time (H:M:S)',
+                    width: '2%',
+                    list: false
+                },
+                TaskRepeat: {
+                    title: 'Repeat Task',
+                    width: '2%',
+                    options: { '0': 'Disable', '1': 'Daily', '2': 'Weekly', '3': 'Monthly', '4': 'Yearly', '5': 'Stop' },
+                    display: function (data) {
+                        var task = "";
+                        switch (data.record.TaskRepeat) {
+                            case 0:
+                                task = "Disable";
+                                break;
+                            case 1:
+                                task = "Daily";
+                                break;
+                            case 2:
+                                task = "Weekly";
+                                break;
+                            case 3:
+                                task = "Monthly";
+                                break;
+                            case 4:
+                                task = "Yearly";
+                                break;
+                            case 5:
+                                task = "Stop";
+                                break;
+                            default:
+                                break;
+                        }
+                        var $img = $('<div class="child-opener-image" >' + task + '</div>');
+                        $img.click(function () {
+                            if (data.record.TaskRepeat != 0) {
+                                url = $('@Html.ActionLink("RepeatTask", "RepeatTask")').attr('href');
+                                url = url + "?taskid=" + data.record.Id;
+                                $("#dialog-edit").dialog("option", "title", "Repeat Task Details");
+                                $("#dialog-edit").dialog('open');
+                            }
+                            return false;
+                        });
+                        return $img;
+                    }
+                },
+                Status: {
+                    title: 'Status',
+                    width: '2%',
+                    options: { '1': 'Start', '2': 'Cancelled', '3': 'Completed' },
+                    display: function (data) {
+                        if (data.record.Status == 1)
+                            return "<div class='proposal'>" + "Start" + "</div>";
+                        if (data.record.Status == 2)
+                            return "<div class='inactive'>" + 'Cancelled' + "</div>";
+                        if (data.record.Status == 3)
+                            return "<div class='activeY'>" + 'Completed' + "</div>";
+                    }
+                },
+                TotalHours: {
+                    title: 'Total Hours',
+                    width: '1%',
+                    edit: false
+                },
+                ActualHours: {
+                    title: 'Actual Hours(H:M:S)',
+                    width: '1%',
+                },
+                TotalCost: {
+                    title: 'Total Cost',
+                    width: '2%',
+                    edit: false
+                },
+                OtherCost: {
+                    title: 'Other Cost',
+                    width:'1%'
+                },
+                GrandTotal: {
+                    title: 'GrandTotal',
+                    width: '1%',
+                    edit:false
+                },
+                CompletePercentage: {
+                    title: '%Compl',
+                    width: '0.5%',
+                    options: { '0%': '0%', '10%': '10%', '25%': '25%', '50%': '50%', '75%': '75%', '100%': '100%' },
+                    display: function (data) {
+                        if (data.record.CompletePercentage == "100%")
+                            return "<div class='activeY'>" + "100%" + "</div>";
+                        else
+                            return "<div class='proposal'>" + data.record.CompletePercentage + "</div>";
+                    }
+                }
+            },
+            
+            formCreated: function (event, data) {
+                data.form.find('input[name="StartTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="DueTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="ComplTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="ActualHours"]').css({ 'background-color': '#FF0' });
+                
+                var $sTtime = data.form.find('input[name="StartTime"]');
+                $sTtime.addClass("date");
+                $sTtime.timepicker();
+
+                var $dTtime = data.form.find('input[name="DueTime"]');
+                $dTtime.addClass("date");
+                $dTtime.timepicker();
+
+                var $cTtime = data.form.find('input[name="ComplTime"]');
+                $cTtime.addClass("date");
+                $cTtime.timepicker();
+
+                var $aTtime = data.form.find('input[name="ActualHours"]');
+                $aTtime.addClass("date");
+                $aTtime.timepicker();
+
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val(), col: 'File'
+                });
+            }
+
+        });
+
+        $("#dateReport").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                date: $('#dateReport').val()
+            });
+        });
+
+        $("#sendReport").click(function (e) {
+            var list = emplist;
+            var date = $('#dateReport').val();
+            $("#load").show();
+            window.location = "TaskManager/SendTaskReport?list=" + list+"&date="+date;
+        });
+
+        $("#Jobnumber").change(function (e) {
+            $('#clientname').val('');
+            $('#eventname').val('');
+            var jobnumber = $('#Jobnumber').val();
+            e.preventDefault();
+            $.ajax({
+                type: 'get',
+                datatype: 'json',
+                cache: false,
+                async: false,
+                url: "@Url.Action("GetJobDetails","TaskManager")",
+                data: { jobnumber: jobnumber },
+                success: function (response) {
+                    $.each(response.results, function (i, item) {
+                        $('#clientname').val(item.ClientName.Name)
+                        $('#eventname').val(item.EventName);
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+        
+        $("#submit").click(function (e) {
+            $('#loading').show();
+            var task = $('#task').val();
+            var startdate = $('#startdate').val();
+            var duedate = $('#duedate').val();
+            var isMail = $('#isMail').val();
+
+            if (task == "") {
+                alert("Please type task description");
+                return false;
+            }
+            if (startdate == "") {
+                alert("Please select start date");
+                return false;
+            }
+            if (duedate == "") {
+                duedate = startdate;
+            }
+            if (new Date(startdate) > new Date(duedate)) {
+                alert("Start date should not less than due date");
+                return false;
+            }
+            if (isMail == 1) {
+                $('#loading').show();
+            }
+
+            var empid = $("#checkboxSelectCombo").igCombo("values");
+            $("#checkboxSelectCombo").val(empid);
+
+        });
+    });
+</script>
+
+

@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{13C087A6-61EA-475F-92CB-25D3E3C249C5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Domain</RootNamespace>
+    <AssemblyName>Domain</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FluentNHibernate, Version=1.3.0.737, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\FluentNHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=10.0.0.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Implementation\CRM\AccountMailLog.cs" />
+    <Compile Include="Implementation\CRM\Contact.cs" />
+    <Compile Include="Implementation\CRM\ContactGroup.cs" />
+    <Compile Include="Implementation\CRM\EmailAttachment.cs" />
+    <Compile Include="Implementation\CRM\EmailTemplate.cs" />
+    <Compile Include="Implementation\CRM\MassEmailing.cs" />
+    <Compile Include="Implementation\CRM\NewAccount.cs" />
+    <Compile Include="Implementation\CRM\OneStayInTouch.cs" />
+    <Compile Include="Implementation\CRM\PotentialAccount.cs" />
+    <Compile Include="Implementation\CRM\PotentialContact.cs" />
+    <Compile Include="Implementation\Master\AccountType.cs" />
+    <Compile Include="Implementation\Master\Branch.cs" />
+    <Compile Include="Implementation\Master\BusinessNature.cs" />
+    <Compile Include="Implementation\Master\Client.cs" />
+    <Compile Include="Implementation\Master\ClientContact.cs" />
+    <Compile Include="Implementation\Master\Company.cs" />
+    <Compile Include="Implementation\Master\ContactType.cs" />
+    <Compile Include="Implementation\Master\Country.cs" />
+    <Compile Include="Implementation\Master\Department.cs" />
+    <Compile Include="Implementation\Master\Employee.cs" />
+    <Compile Include="Implementation\Master\EmpRights.cs" />
+    <Compile Include="Implementation\Master\EnquirySource.cs" />
+    <Compile Include="Implementation\Master\EnquiryStatus.cs" />
+    <Compile Include="Implementation\Master\Group.cs" />
+    <Compile Include="Implementation\Master\Industry.cs" />
+    <Compile Include="Implementation\Master\LeadSource.cs" />
+    <Compile Include="Implementation\Master\Location.cs" />
+    <Compile Include="Implementation\Master\LoginInfo.cs" />
+    <Compile Include="Implementation\Master\NatureGroup.cs" />
+    <Compile Include="Implementation\Master\ReportScheduler.cs" />
+    <Compile Include="Implementation\Master\Supplier.cs" />
+    <Compile Include="Implementation\Master\SupplierCategory.cs" />
+    <Compile Include="Implementation\Task\RepeatTask.cs" />
+    <Compile Include="Implementation\Task\TaskManager.cs" />
+    <Compile Include="Implementation\Transaction\Budget.cs" />
+    <Compile Include="Implementation\Transaction\BudgetTrn.cs" />
+    <Compile Include="Implementation\Transaction\HotelDetails.cs" />
+    <Compile Include="Implementation\Transaction\NBO.cs" />
+    <Compile Include="Implementation\Transaction\NBOComments.cs" />
+    <Compile Include="Implementation\Transaction\Payable.cs" />
+    <Compile Include="Implementation\Transaction\Receivable.cs" />
+    <Compile Include="Implementation\Transaction\TempNBO.cs" />
+    <Compile Include="Interface\CRM\IAccountMailLog.cs" />
+    <Compile Include="Interface\CRM\IContact.cs" />
+    <Compile Include="Interface\CRM\IContactGroup.cs" />
+    <Compile Include="Interface\CRM\IEmailAttachment.cs" />
+    <Compile Include="Interface\CRM\IEmailTemplate.cs" />
+    <Compile Include="Interface\CRM\IMassEmailing.cs" />
+    <Compile Include="Interface\CRM\INewAccount.cs" />
+    <Compile Include="Interface\CRM\IOneStayInTouch.cs" />
+    <Compile Include="Interface\CRM\IPotentialAccount.cs" />
+    <Compile Include="Interface\CRM\IPotentialContact.cs" />
+    <Compile Include="Interface\Master\IAccountType.cs" />
+    <Compile Include="Interface\Master\IBusinessNature.cs" />
+    <Compile Include="Interface\Master\IBranch.cs" />
+    <Compile Include="Interface\Master\IClientContact.cs" />
+    <Compile Include="Interface\Master\IClient.cs" />
+    <Compile Include="Interface\Master\ICompany.cs" />
+    <Compile Include="Interface\Master\IContactType.cs" />
+    <Compile Include="Interface\Master\ICountry.cs" />
+    <Compile Include="Interface\Master\IDepartment.cs" />
+    <Compile Include="Interface\Master\IEmployee.cs" />
+    <Compile Include="Interface\Master\IEmpRights.cs" />
+    <Compile Include="Interface\Master\IEnquirySource.cs" />
+    <Compile Include="Interface\Master\IEnquiryStatus.cs" />
+    <Compile Include="Interface\Master\IGroup.cs" />
+    <Compile Include="Interface\Master\IIndustry.cs" />
+    <Compile Include="Interface\Master\ILeadSource.cs" />
+    <Compile Include="Interface\Master\ILocation.cs" />
+    <Compile Include="Interface\Master\ILoginInfo.cs" />
+    <Compile Include="Interface\Master\INatureGroup.cs" />
+    <Compile Include="Interface\Master\IReportScheduler.cs" />
+    <Compile Include="Interface\Master\ISupplier.cs" />
+    <Compile Include="Interface\Master\ISupplierCategory.cs" />
+    <Compile Include="Interface\Task\IRepeatTask.cs" />
+    <Compile Include="Interface\Task\ITaskManager.cs" />
+    <Compile Include="Interface\Transaction\IBudget.cs" />
+    <Compile Include="Interface\Transaction\IBudgetTrn.cs" />
+    <Compile Include="Interface\Transaction\IHotelDetails.cs" />
+    <Compile Include="Interface\Transaction\INBO.cs" />
+    <Compile Include="Interface\Transaction\INBOComments.cs" />
+    <Compile Include="Interface\Transaction\IPayable.cs" />
+    <Compile Include="Interface\Transaction\IReceivable.cs" />
+    <Compile Include="Interface\Transaction\ITempNBO.cs" />
+    <Compile Include="Mapping\CRM\AccountMailLogMap.cs" />
+    <Compile Include="Mapping\CRM\ContactGroupMap.cs" />
+    <Compile Include="Mapping\CRM\ContactMap.cs" />
+    <Compile Include="Mapping\CRM\EmailAttachmentMap.cs" />
+    <Compile Include="Mapping\CRM\EmailTemplateMap.cs" />
+    <Compile Include="Mapping\CRM\MassEmailingMap.cs" />
+    <Compile Include="Mapping\CRM\NewAccountMap.cs" />
+    <Compile Include="Mapping\CRM\OneStayInTouchMap.cs" />
+    <Compile Include="Mapping\CRM\PotentialAccountMap.cs" />
+    <Compile Include="Mapping\CRM\PotentialContactMap.cs" />
+    <Compile Include="Mapping\Master\AccountTypeMap.cs" />
+    <Compile Include="Mapping\Master\BranchMap.cs" />
+    <Compile Include="Mapping\Master\BusinessNatureMap.cs" />
+    <Compile Include="Mapping\Master\ClientContactMap.cs" />
+    <Compile Include="Mapping\Master\ClientMap.cs" />
+    <Compile Include="Mapping\Master\CompanyMap.cs" />
+    <Compile Include="Mapping\Master\ContactTypeMap.cs" />
+    <Compile Include="Mapping\Master\CountryMap.cs" />
+    <Compile Include="Mapping\Master\DepartmentMap.cs" />
+    <Compile Include="Mapping\Master\EmployeeMap.cs" />
+    <Compile Include="Mapping\Master\EmpRightsMap.cs" />
+    <Compile Include="Mapping\Master\EnquirySourceMap.cs" />
+    <Compile Include="Mapping\Master\EnquiryStatusMap.cs" />
+    <Compile Include="Mapping\Master\GroupMap.cs" />
+    <Compile Include="Mapping\Master\IndustryMap.cs" />
+    <Compile Include="Mapping\Master\LeadSourceMap.cs" />
+    <Compile Include="Mapping\Master\LocationMap.cs" />
+    <Compile Include="Mapping\Master\LoginInfoMap.cs" />
+    <Compile Include="Mapping\Master\NatureGroupMap.cs" />
+    <Compile Include="Mapping\Master\ReportSchedulerMap.cs" />
+    <Compile Include="Mapping\Master\SupplierCategoryMap.cs" />
+    <Compile Include="Mapping\Master\SupplierMap.cs" />
+    <Compile Include="Mapping\Task\RepeatTaskMap.cs" />
+    <Compile Include="Mapping\Task\TaskManagerMap.cs" />
+    <Compile Include="Mapping\Transaction\BudgetMap.cs" />
+    <Compile Include="Mapping\Transaction\BudgetTrnMap.cs" />
+    <Compile Include="Mapping\Transaction\HotelDetailsMap.cs" />
+    <Compile Include="Mapping\Transaction\INBOCommentsMap.cs" />
+    <Compile Include="Mapping\Transaction\NBOMap.cs" />
+    <Compile Include="Mapping\Transaction\PayableMap.cs" />
+    <Compile Include="Mapping\Transaction\ReceivableMap.cs" />
+    <Compile Include="Mapping\Transaction\TempNBOMap.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

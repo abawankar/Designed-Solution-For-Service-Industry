@@ -1,0 +1,231 @@
+﻿@{
+    ViewBag.Title = "Email Template";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"> </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: 'Print Labels',
+            autoOpen: false,
+            resizable: false,
+            width: 350,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+        
+        $('#table').jtable({
+            title: 'Template',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("ListTemplate")',
+                deleteAction: '@Url.Action("Delete")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                TemplateName: {
+                    title: 'TemplateName',
+                    width: '5%'
+                },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                    display: function (data) {
+                        if (data.record.Type == 0)
+                            return "Mail";
+                        else
+                            return "SIT";
+                    }
+                },
+                Description: {
+                    title: 'Description',
+                    width: '5%'
+                },
+                Subject: {
+                    title: 'Subject',
+                    width: '5%'
+                },
+                edit: {
+                    title: 'Edit',
+                    width: '0.2%',
+                    display: function (data) {
+                        var $img = $('<img title="Edit Template" class="child-opener-image" src="/Content/Images/edit.png" width=20 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("testmail", "Index","EditTemplate")').attr('href');
+                            url = url + "?id=" + data.record.Id;
+                            window.location.href = url;
+                        });
+                        return $img;
+                    }
+                },
+                //Add attachments
+                Attachments: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (img) {
+                        var $img = $('<img title="Attachments" class="child-opener-image" src="/Content/Images/attach.png" width="20px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: "Template Name: " + img.record.TemplateName,
+                                actions: {
+                                    listAction: '@Url.Action("AttachmentsList")?id=' + img.record.Id,
+                                    deleteAction: '@Url.Action("DeleteAttachment")',
+                                    updateAction: '@Url.Action("updateAttachment")',
+
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Filetype: {
+                                        title: '',
+                                        width: '1%',
+                                        edit: false,
+                                        display: function (att) {
+                                            var $img = $('<img title="Attachments" class="child-opener-image" src="Content/Images/attach.png" width="20px" />');
+                                            $img.click(function () {
+                                                var file = att.record.FileOnServer;
+                                                var url = "Upload/EmailAttachments/" + file
+                                                window.open(url);
+                                            });
+                                            return $img
+                                        }
+                                    },
+                                    FileName: {
+                                        title: 'FileName',
+                                        width: '20%',
+                                        edit: false,
+                                    },
+                                    AttachType: {
+                                        title: 'Attachment Type',
+                                        width: '10%',
+                                        options:{"0":"Attachment","1":"EmailBody"},
+                                        display: function (e) {
+                                            if (e.record.AttachType == 1)
+                                                return "As an Mail Body";
+                                            else
+                                                return "As an Attachment";
+                                        }
+                                    },
+                                    FileSize: {
+                                        title: 'File Size',
+                                        width: '20%',
+                                        edit: false,
+                                    }
+                                   
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/Add.png',
+                                        text: 'Add Attachments',
+                                        click: function () {
+                                            var str = $('@Html.ActionLink("AddAttachments", "AddAttachments")').attr('href');
+                                            url = str + "/" + img.record.Id
+                                            $("#dialog-edit").dialog("option", "title", "Add Attachment");
+                                            $("#dialog-edit").dialog('open');
+                                            return false;
+                                        }
+                                    }]
+                                }
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+                //Images Child Table End*/
+                TestMail: {
+                    title: 'Test',
+                    width: '0.2%',
+                    display: function (data) {
+                        var $img = $('<img title="Send Test Mail" class="child-opener-image" src="/Content/Images/mail.png" width=20 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("testmail", "SendTestMail")').attr('href');
+                            url = url + "?id=" + data.record.Id;
+                            window.open(url);
+                        });
+                        return $img;
+                    }
+                }
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/add.png',
+                    text: 'New Template',
+                    click: function () {
+                        var url = "EmailTemplate";
+                        window.location.href = url;
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+
+        
+    });
+</script>

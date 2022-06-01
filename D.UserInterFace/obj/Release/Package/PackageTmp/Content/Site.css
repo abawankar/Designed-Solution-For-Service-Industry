@@ -1,0 +1,126 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.topmar-10{
+    margin-top:10px;
+}
+
+.search-box {
+    padding: 3px 6px;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #555555;
+    vertical-align: middle;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+
+.pointer{
+    cursor:pointer;
+}
+
+
+.inactive
+{
+	background:#f60909;
+	font-weight:bold;
+	text-align:center;
+	color:#fff;
+	padding:3px;
+	border-radius:2px;
+}
+
+.proposal
+{
+	background:#d0c00b;
+	font-weight:bold;
+	text-align:center;
+	color:#fff;
+	padding:3px;
+	border-radius:2px;
+}
+
+.confirmed
+{
+	background:#71c428;
+	font-weight:bold;
+	text-align:center;
+	color:#fff;
+	padding:3px;
+	border-radius:2px;
+}
+.cancelled
+{
+	background:#f80505;
+	font-weight:bold;
+	text-align:center;
+	color:#fff;
+	padding:3px;
+	border-radius:2px;
+}
+
+.yellow
+{
+	background-color:yellow;
+	font-weight:bold;
+	text-align:center;
+	color:#0a0a0a;
+	padding:3px;
+	border-radius:2px;
+}
+.orange
+{
+	background-color:orange;
+	font-weight:bold;
+	text-align:center;
+	color:#0a0a0a;
+	padding:3px;
+	border-radius:2px;
+}
+.red
+{
+	background-color:Red;
+	font-weight:bold;
+	text-align:center;
+	color:#0a0a0a;
+	padding:3px;
+	border-radius:2px;
+}
+.nopadding{
+    padding:0px;
+}
+.noLRPadding{
+    padding-left:0px;
+    padding-right:0px;
+}
+
+table.jtable thead {
+     font-size: 0.8em;
+}

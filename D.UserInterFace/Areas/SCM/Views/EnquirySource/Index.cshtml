@@ -1,0 +1,126 @@
+﻿@{
+    ViewBag.Title = "Enquiry Source";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $('#table').jtable({
+            title: 'Enquiry Source',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                Name: {
+                    title: 'Enquiry Source',
+                    width: '15%'
+                },
+                AppointmentDate: {
+                    title: 'Date Of Appointment',
+                    type: 'date',
+                    width: '10%',
+                    display: function (data) {
+                        if (data.record.AppointmentDate != null)
+                        return moment(data.record.AppointmentDate).format('DD-MMM-YYYY')
+                    },
+                },
+                TerminationDate: {
+                    title: 'Date Of Termination',
+                    type: 'date',
+                    width: '10%',
+                    display: function (data) {
+                        if(data.record.TerminationDate != null)
+                            return moment(data.record.TerminationDate).format('DD-MMM-YYYY')
+                    },
+                },
+                RetainerFee: {
+                    title: 'Retainer Fee',
+                    width: '5%'
+                },
+                CommLeisure: {
+                    title: 'Comm Leisure',
+                    width: '5%'
+                },
+                CommMice: {
+                    title: 'Comm Mice',
+                    width: '5%%'
+                },
+                Active: {
+                    title: 'Active',
+                    width: '1%',
+                    type: 'checkbox',
+                    values: { 'false': 'No', 'true': 'Yes' },
+                    defaultValue: 'true',
+                    display: function (data) {
+                        if (data.record.Active == true)
+                             return ('<div class="active">' + 'Yes' + '</div>');
+                        else
+                            return ('<div class="inactive">' + 'No' + '</div>');
+                        
+                    }
+                },
+                //Child tabl
+
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "EnquirySource/ExportData";
+                            window.open(url);
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+
+        });
+
+        
+    });
+</script>

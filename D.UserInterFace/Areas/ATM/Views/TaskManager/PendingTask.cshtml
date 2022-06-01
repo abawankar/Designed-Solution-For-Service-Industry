@@ -1,0 +1,362 @@
+﻿@{
+    ViewBag.Title = "Pending Activity";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/jquery.ui.timepicker.css")" rel="stylesheet" type="text/css" />
+}
+@section Script{
+    <script src="@Url.Content("~/Scripts/js/jquery.ui.timepicker.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.ActionLink("New Activity", "Index") |
+        @Html.DropDownList("Type", new SelectList((ViewBag.Type) as SelectList, "Value", "Text"), "Type", new { @class="search-box" }) |
+        @Html.DropDownList("Status", new SelectList((ViewBag.Status) as SelectList, "Value", "Text"), "Status",new { @class = "search-box" }) |
+        @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "Assignee", new { @class = "search-box" }) |
+        Start Date <input class="search-box" type="date" id="startDate" />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+        <div id="dialog-edit" style="display: none"> </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 800,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //End dialog form
+
+        $('#table').jtable({
+            title: 'Activity Manager',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                deleteAction: '@Url.Action("Delete")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Date: {
+                    title: 'Task Created',
+                    type: 'date',
+                    width: '2%',
+                    edit:false,
+                    display: function (data) {
+                        if (data.record.Date != null)
+                            return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                    options: { 'Task': 'Task', 'Meeting': 'Meeting'},
+                },
+                JobNumber: {
+                    title: 'Job',
+                    width: '2%',
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.JobNumber + '"/>';
+                    }
+                },
+                ClientName: {
+                    title: 'Client Name',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.ClientName + '"/>';
+                    }
+                },
+                EventName: {
+                    title: 'Event Name',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.EventName + '"/>';
+                    }
+                },
+                Task: {
+                    title: 'Task',
+                    width: '7%',
+                    type: 'textarea'
+                },
+                Notes: {
+                    title: 'Notes',
+                    width: '2%',
+                    type:'textarea'
+                },
+                Assigner: {
+                    title: 'Assigner',
+                    width: '1%',
+                    edit: false,
+                    display: function (data) {
+                        return data.record.Assigneer.EmpName
+                    }
+                },
+                AssignerId: {
+                    title: 'Assigner',
+                    width: '2%',
+                    options: '@Url.Action("GetEmployeeList","Employee")',
+                    list: true,
+                    type:'hidden'
+                },
+                Assignee: {
+                    title: 'Assignee',
+                    width:'2%',
+                    edit: false,
+                    display:function(data) {
+                        var emp = "";
+                        if (data.record.Contacts != null) {
+                            $.each(data.record.Contacts, function (data, record) {
+                                if (emp == "") {
+                                    emp = record.EmpName;
+                                }
+                                else {
+                                    emp = emp + "," + record.EmpName;
+                                }
+                               
+                            });
+                        }
+                        return emp;
+                    }
+                },
+                Start: {
+                    title: 'Start Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Start != null)
+                            return moment(data.record.Start).format('DD-MMM-YYYY')
+                    },
+                },
+                StartTime: {
+                    title: 'Start Time(H:M:S)',
+                    width: '2%',
+                    list: false
+                },
+                Due: {
+                    title: 'Due Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Due != null)
+                            return moment(data.record.Due).format('DD-MMM-YYYY')
+                    },
+                },
+                DueTime: {
+                    title: 'Due Time(H:M:S)',
+                    width: '2%',
+                    list: false
+                },
+                Compl: {
+                    title: 'Compl Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        if (data.record.Compl != null)
+                            return moment(data.record.Compl).format('DD-MMM-YYYY')
+                    },
+                },
+                ComplTime: {
+                    title: 'Compl Time (H:M:S)',
+                    width: '2%',
+                    list: false
+                },
+                TaskRepeat: {
+                    title: 'Repeat Task',
+                    width: '2%',
+                    options: { '0': 'Disable', '1': 'Daily', '2': 'Weekly', '3': 'Monthly', '4': 'Yearly', '5': 'Stop' },
+                    display: function (data) {
+                        var task = "";
+                        switch (data.record.TaskRepeat) {
+                            case 0:
+                                task = "Disable";
+                                break;
+                            case 1:
+                                task = "Daily";
+                                break;
+                            case 2:
+                                task = "Weekly";
+                                break;
+                            case 3:
+                                task = "Monthly";
+                                break;
+                            case 4:
+                                task = "Yearly";
+                                break;
+                            case 5:
+                                task = "Stop";
+                                break;
+                            default:
+                                break;
+                        }
+                        var $img = $('<div class="child-opener-image" >' + task + '</div>');
+                        $img.click(function () {
+                            if (data.record.TaskRepeat != 0) {
+                                url = $('@Html.ActionLink("RepeatTask", "RepeatTask")').attr('href');
+                                url = url + "?taskid=" + data.record.Id;
+                                $("#dialog-edit").dialog("option", "title", "Repeat Task Details");
+                                $("#dialog-edit").dialog('open');
+                            }
+                            return false;
+                        });
+                        return $img;
+                    }
+                                },
+                Status: {
+                    title: 'Status',
+                    width: '1%',
+                    options: { '1': 'Start', '2': 'Cancelled', '3': 'Completed' },
+                    display: function (data) {
+                        if (data.record.Status == 1)
+                            return "<div class='proposal'>" + "Start" + "</div>";
+                        if (data.record.Status == 2)
+                            return "<div class='inactive'>" + 'Cancelled' + "</div>";
+                        if (data.record.Status == 3)
+                            return "<div class='activeY'>" + 'Completed' + "</div>";
+                    }
+                },
+                TotalHours: {
+                    title: 'Total Hours',
+                    width: '1%',
+                    edit: false
+                },
+                ActualHours: {
+                    title: 'Actual Hours(H:M:S)',
+                    width: '1%',
+                    list: false
+                },
+                TotalCost: {
+                    title: 'Total Cost',
+                    width: '2%',
+                    edit: false
+                },
+                OtherCost: {
+                    title: 'Other Cost',
+                    width: '1%'
+                },
+                GrandTotal: {
+                    title: 'GrandTotal',
+                    width: '1%',
+                    edit: false
+                },
+                CompletePercentage: {
+                    title: '% Completed',
+                    width: '0.5%',
+                    options: { '0%': '0%', '10%': '10%', '25%': '25%', '50%': '50%', '75%': '75%', '100%': '100%' },
+                    display: function (data) {
+                        if (data.record.CompletePercentage == "100%")
+                            return "<div class='activeY'>" + "100%" + "</div>";
+                        else
+                            return "<div class='proposal'>" + data.record.CompletePercentage + "</div>";
+                    }
+                }
+            },
+        
+            formCreated: function (event, data) {
+                data.form.find('input[name="StartTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="DueTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="ComplTime"]').css({ 'background-color': '#FF0' });
+                data.form.find('input[name="ActualHours"]').css({ 'background-color': '#FF0' });
+
+                var $sTtime = data.form.find('input[name="StartTime"]');
+                $sTtime.addClass("date");
+                $sTtime.timepicker();
+
+                var $dTtime = data.form.find('input[name="DueTime"]');
+                $dTtime.addClass("date");
+                $dTtime.timepicker();
+
+                var $cTtime = data.form.find('input[name="ComplTime"]');
+                $cTtime.addClass("date");
+                $cTtime.timepicker();
+
+                var $aTtime = data.form.find('input[name="ActualHours"]');
+                $aTtime.addClass("date");
+                $aTtime.timepicker();
+
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $("#startDate").change(function (e) {
+            $('#Type').val('');
+            $('#Emp').val('');
+            $('#Status').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#startDate').val(), col: 'date'
+            });
+        });
+
+        $("#Emp").change(function (e) {
+            $('#Type').val('');
+            $('#startDate').val('');
+            $('#Status').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#Emp').val(), col: 'emp'
+            });
+        });
+
+        $("#Status").change(function (e) {
+            $('#Type').val('');
+            $('#Emp').val('');
+            $('#startDate').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#Status').val(), col: 'status'
+            });
+        });
+
+        $("#Type").change(function (e) {
+            $('#Status').val('');
+            $('#Emp').val('');
+            $('#startDate').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#Type').val(), col: 'type'
+            });
+        });
+        
+    });
+</script>

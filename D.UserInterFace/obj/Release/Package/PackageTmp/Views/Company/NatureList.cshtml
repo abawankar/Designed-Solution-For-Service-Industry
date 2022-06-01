@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "Business Nature";
+}
+<div class="filtering">
+    Branch: @Html.DropDownList("branch",new SelectList((ViewBag.branch) as SelectList,"Value","Text"),"Select")
+</div>
+
+<div id="tablenature"></div>
+
+<button role="button" aria-disabled="false" id="addnature" title="Add Business Nature" > 
+ Add
+</button>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#tablenature').jtable({
+            title: 'Business Nature',
+            paging: false,
+            sorting: true,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick:false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ListOfNature")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Name: {
+                    title: 'Name',
+                    width: '10%'
+                }                
+            },
+            selectionChanged: function () {
+                var $selecedRows = $('#tablenature').jtable('selectedRows');
+            }
+        });
+
+        //Delete selected currencies
+        $('#addnature').button().click(function () {
+            var branchid = $("#branch").val();
+            var $selecedRows = $('#tablenature').jtable('selectedRows');
+            var list = branchid;
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+            $.ajax({
+                url: "@Url.Action("AddNature")",
+                type: 'POST',
+                datatype: 'HTML',
+                data: { branchId: branchid, list: list },
+                success: function (data) {
+                    alert("Nature Added");
+                    $('#tablenature').jtable('load', {
+                        id: $('#table').val()
+                    });
+                },
+                error: function () {
+                }
+            });
+        });
+
+        $("#branch").change(function (e) {
+            e.preventDefault();
+            $('#tablenature').jtable('load', {
+                id: $('#branch').val()
+            });
+            
+        });
+    });
+</script>

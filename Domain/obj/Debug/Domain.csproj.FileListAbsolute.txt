@@ -1,0 +1,13 @@
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Debug\Domain.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\bin\Debug\Domain.pdb
+D:\MY PROJECTS\1001Events\1001Events\Domain\obj\Debug\Domain.dll
+D:\MY PROJECTS\1001Events\1001Events\Domain\obj\Debug\Domain.pdb
+D:\MY PROJECTS\1001Events\1001Events\Domain\obj\Debug\Domain.csprojResolveAssemblyReference.cache
+C:\Project Backup\1001Events\1001Events\Domain\bin\Debug\Domain.dll
+C:\Project Backup\1001Events\1001Events\Domain\bin\Debug\Domain.pdb
+C:\Project Backup\1001Events\1001Events\Domain\obj\Debug\Domain.dll
+C:\Project Backup\1001Events\1001Events\Domain\obj\Debug\Domain.pdb
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Debug\Domain.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\bin\Debug\Domain.pdb
+D:\MVC Project\SCM&ATM\D.SCM\Domain\obj\Debug\Domain.dll
+D:\MVC Project\SCM&ATM\D.SCM\Domain\obj\Debug\Domain.pdb

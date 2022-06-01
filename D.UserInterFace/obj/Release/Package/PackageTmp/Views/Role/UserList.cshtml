@@ -1,0 +1,108 @@
+﻿@{
+    ViewBag.Title = "Application Users";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.ActionLink("New Role", "Create") | 
+        @Html.DropDownList("roles", new SelectList((ViewBag.Roles) as SelectList, "Value", "Text"), "All Roles", new { @class = "search-box" }) |
+        <input type="text" class="search-box" id="search" placeholder="Search.." />
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#table').jtable({
+            title: 'User List',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                FullName: {
+                    title: 'Name',
+                    width: '2%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '2%'
+                },
+                UserName: {
+                    title: 'UserName',
+                    width: '2%'
+                },
+                Roles: {
+                    title: 'Roles',
+                    width: '2%',
+                    display: function (data) {
+                        var role = "";
+                        if (data.record.Roles != null) {
+                            $.each(data.record.Roles, function (data, record) {
+                                if (role == "") {
+                                    role = record;
+                                }
+                                else {
+                                    role = role + "," + record;
+                                }
+
+                            });
+                        }
+                        return role;
+                    }
+                },
+                //End of Contact Child Table
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/add.png',
+                    text: 'New User',
+                    click: function () {
+                        var url = "/Account/Register";
+                        window.location.href = url;
+                        return false;
+                    }
+                }, {
+                    icon: '/Content/Images/edit.png',
+                    text: 'Manage User Roles',
+                    click: function () {
+                        var url = "/Role/ManageUserRoles";
+                        window.location.href = url;
+                        return false;
+                    }
+                }]
+            },
+        });
+        $('#table').jtable('load');
+
+        $("#roles").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#roles').val()
+            });
+        });
+
+        $('#search').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    search: $('#search').val(), name: $('#roles').val()
+                });
+            }
+        });
+
+
+    });
+</script>
+    

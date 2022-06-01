@@ -1,0 +1,45 @@
+﻿@{
+	ViewBag.Title = "ImportClientData";
+}
+
+<div class="filtering">
+	@Html.ActionLink("Dashboard","Index","Home") | <input type="button" id="readData" value="Read" />
+	
+   <div id="dialog-edit" style="display: none"> </div>
+</div>
+
+@using (Html.BeginForm("FileUpload", "Client",
+    FormMethod.Post, new { enctype = "multipart/form-data" }))
+{ 
+    <div>
+        Upload CSV File:<input type="file" id="btnUpload" name="uploadFile" />
+        <input type="submit" value="Upload" />
+    </div>
+}
+
+<script type="text/javascript">
+	$(document).ready(function () {
+	    
+		//Dialog form
+		$("#dialog-edit").dialog({
+			title: 'Add Business Nature',
+			autoOpen: false,
+			resizable: false,
+			width: 400,
+			show: { effect: 'drop', direction: "up" },
+			modal: true,
+			draggable: true,
+			open: function (event, ui) {
+				$(".ui-dialog-titlebar-close").show();
+				$(this).load(url);
+			},
+			buttons: {
+				"Cancel": function () {
+					$(this).dialog("close");
+				},
+			}
+		});
+
+	});
+</script>
+	

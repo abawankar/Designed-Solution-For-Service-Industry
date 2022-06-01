@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "ConvertToAccount";
+}
+<style type="text/css">
+    .margin-bottom
+    {
+        margin-bottom:0px;
+    }
+</style>
+@using (Html.BeginForm("Convert", "PotentialAccount", FormMethod.Post, new { id = "newtask", enctype = "multipart/form-data" }))
+{ 
+<div class="panel panel-info" >
+    <div class="panel margin-bottom panel-heading">Convert To Account</div>
+    <div class="panel-body">
+        <input type="hidden" value="@ViewBag.id" id="potantial" name="potantial" />
+        <table class="table table-bordered">
+            <tr>
+                <td>Type</td>
+                <td>@Html.DropDownList("type",new SelectList((ViewBag.type) as SelectList,"Value","Text")) </td>
+            </tr>
+            <tr><td>Account Name</td><td></td></tr>
+            <tr><td>Industry</td>
+                <td>@Html.DropDownList("industry",new SelectList((ViewBag.industry) as SelectList,"Value","Text"))</td>
+            </tr>
+            <tr><td>Website</td><td><input type="text" name="website" /></td></tr>
+            <tr><td>Description</td><td><input type="text" name="Description" /></td></tr>
+            <tr><td>Phone</td><td><input type="text" name="Phone" /></td></tr>
+            <tr><td colspan="2">Address Information</td></tr>
+            <tr><td>Street</td><td><input type="text" name="Street" /></td></tr>
+            <tr><td>City</td><td><input type="text" name="City" /></td></tr>
+            <tr><td>State</td><td><input type="text" name="State" /></td></tr>
+             <tr>
+                <td>Country</td>
+                <td>@Html.DropDownList("country",new SelectList((ViewBag.country) as SelectList,"Value","Text")) </td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="submit" value="Convert" /> </td>
+            </tr>
+        </table>
+    </div>
+</div>
+}
+
+
+

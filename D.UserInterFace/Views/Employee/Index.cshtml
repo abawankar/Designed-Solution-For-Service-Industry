@@ -1,0 +1,271 @@
+﻿@{
+    ViewBag.Title = "Employee";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") | 
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+        @Html.DropDownList("bran", new SelectList((ViewBag.bran) as SelectList, "Value", "Text"), "Branch",new{@class="search-box" })  |
+        @Html.DropDownList("dept", new SelectList((ViewBag.dept) as SelectList, "Value", "Text"), "Department", new { @class = "search-box" })
+    </div>
+    <div class="panel-body">
+        <div id="table" class="table-responsive"></div>
+        <div id="dialog-edit" style="display: none"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+     //Dialog form
+        $("#dialog-edit").dialog({
+            title: 'Add',
+            autoOpen: false,
+            resizable: false,
+            width: 600,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(".ui-dialog-titlebar-close").show();
+                $(this).load(url);
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        $('#table').jtable({
+            title: 'Employee',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                EmpCode: {
+                    title: 'Code',
+                    width: '2%'
+                },
+                EmpName: {
+                    title: 'Name',
+                    width: '10%'
+                },
+                AppLogin: {
+                    title: 'AppLogin',
+                    width: '2%',
+                },
+                MailId: {
+                    title: 'MailId',
+                    width: '8%',
+                },
+                CompId: {
+                    title: 'Company',
+                    width: '2%',
+                    options: '@Url.Action("GetCompanyOptions","Company")'
+                },
+                BranchId: {
+                    title: 'Branch',
+                    width: '2%',
+                    dependsOn: 'CompId',
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return 'Company/GetBranchOptions?compId=0';
+                        }
+                        return 'Company/GetBranchOptions?compId=' + data.dependedValues.CompId;
+                    }
+                },
+                DeptId: {
+                    title: 'Department',
+                    width: '2%',
+                    dependsOn: 'BranchId',
+                    options: function (data) {
+                        if (data.source == 'list') {
+                            return 'Company/GetDeptOptions?branchId=0';
+                        }
+                        return 'Company/GetDeptOptions?branchId=' + data.dependedValues.BranchId;
+                    }
+                },
+                GroupId: {
+                    title: 'Group',
+                    width: '10%',
+                    options: '@Url.Action("GetGroupOptions","Group")'
+                },
+                Role: {
+                    title: 'Role',
+                    width: '2%',
+                    edit: false,
+                    create:false
+                },
+                 CostPerHour: {
+                    title: 'CostPerHour',
+                    width: '2%',
+                },
+                Active: {
+                    title: 'Active',
+                    width: '1%',
+                    type: 'checkbox',
+                    values: { 'false': 'No', 'true': 'Yes' },
+                    defaultValue: 'true',
+                    edit: false,
+                    create:false,
+                    display: function (data) {
+                        if (data.record.Active == true)
+                            return ('<div class="activeY">' + 'Yes' + '</div>');
+                        else
+                            return ('<div class="inactive">' + 'No' + '</div>');
+
+                    }
+                },
+                //Report Scheduler
+                Rights: {
+                    title: '',
+                    width: '0.1%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (rights) {
+                        var $img = $('<img title="Employee Rights" class="child-opener-image pointer" src="/Content/Images/right.png" width="20px" />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: rights.record.EmpName + " - Rights",
+                                actions: {
+                                    listAction: '@Url.Action("GetEmpRights")?id=' + rights.record.Id,
+                                    deleteAction: '@Url.Action("DeleteRights")?empId=' + rights.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Area: {
+                                        title: 'Area',
+                                        width: '12%'
+                                    },
+                                    MnuName: {
+                                        title: 'MnuName',
+                                        width: '12%'
+                                    },
+                                    Description: {
+                                        title: 'Description',
+                                        width: '12%'
+                                    },
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/Add.png',
+                                        text: 'Assign Employee Rights',
+                                        click: function () {
+                                            url = $('@Html.ActionLink("Assigned EmpRights", "EmpRightsList")').attr('href');
+                                            url = url + "?id=" + rights.record.Id,
+                                            $("#dialog-edit").dialog("option", "title", "Assign Rights");
+                                            $("#dialog-edit").dialog('open');
+                                            return false;
+                                        }
+                                    }]
+                                }
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                },
+
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "Employee/ExportData?branch=" + $("#bran").val();
+                            window.open(url);
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="EmpCode"]').addClass('validate[required]');
+                data.form.find('input[name="EmpName"]').addClass('validate[required]');
+                data.form.find('input[name="AppLogin"]').addClass('validate[required]');
+                data.form.find('input[name="MailId"]').addClass('validate[required,custom[email]]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $('#name').bind('keyup', function (e) {
+            $('#bran').val('');
+            $('#dept').val('')
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val(),col:'search'
+                });
+            }
+        });
+
+        $("#dept").change(function (e) {
+            $('#name').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                name: $('#dept').val(), branId: $("#bran").val(), col: 'dept'
+            });
+        });
+
+        $("#bran").change(function (e) {
+            var id = $('#bran').val();
+            e.preventDefault();
+            var dept = $('#dept');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetDepartment","Company")",
+                data: { branId: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">Deparment</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.Id + "\">" + item.Name + "</option>";
+                    });
+                    dept.html("");
+                    dept.html(items);
+
+                },
+                error: function () {
+                }
+            });
+            $('#table').jtable('load', {
+                branId: $("#bran").val(), col: 'branch'
+            });
+         });
+    });
+</script>

@@ -1,0 +1,114 @@
+﻿@model D.UserInterFace.Areas.CRM.Models.NewAccountModel
+@{
+    ViewBag.Title = "FullDetails";
+}
+
+
+<style type="text/css">
+    .sp
+    {
+        width:5px;
+    }
+</style>
+
+<div class="row">
+
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">Account info</div>
+            <div class="panlel-body">
+                <table class="table">
+     <tr>
+        <td>Type</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Type)</td>
+    </tr>
+    <tr>
+        <td>Account Name</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.AccountName)</td>
+    </tr>
+     <tr>
+        <td>Account Category</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Industry.Name)</td>
+    </tr>
+    <tr>
+        <td>Account Type</td><td class="sp">:</td>
+        <td>@foreach (var item in Model.ActType)
+            {
+                @item.Name <br />
+            }
+        </td>
+    </tr>
+    <tr>
+        <td>Description</td><td class="sp">:</td>
+        <td><div style="white-space: pre-wrap;">@Model.Description</div></td>
+    </tr>
+
+</table>
+        </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="panel panel-info nopadding">
+            <div class="panel-heading">Address Info</div>
+            <div class="panlel-body">
+                <table class="table">
+                    <tr>
+        <td>Phone</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Phone)</td>
+    </tr>
+    <tr>
+        <td>Fax</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Fax)</td>
+    </tr>
+                    <tr>
+        <td>Email</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Email)</td>
+    </tr>
+     <tr>
+        <td>Street</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Street)</td>
+    </tr>
+    <tr>
+        <td>City</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.City)</td>
+    </tr>
+     <tr>
+        <td>State</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.State)</td>
+    </tr>
+     
+    <tr>
+        <td>Country</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Country.Name)</td>
+    </tr>
+   
+    
+</table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">File info</div>
+            <div class="panlel-body">
+                <table class="table">
+      <tr>
+        <td>Creation Date</td><td class="sp">:</td>
+        <td>@Convert.ToDateTime(Model.Date).ToString("dd-MMM-yyyy")</td>
+    </tr>
+                     <tr>
+        <td>Created By</td><td class="sp">:</td>
+        <td>@Html.DisplayFor(m=>m.Owner.EmpName)</td>
+    </tr>
+
+</table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+ 

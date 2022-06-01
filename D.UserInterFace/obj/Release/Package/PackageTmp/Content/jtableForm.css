@@ -1,0 +1,52 @@
+﻿.jtable-input-readonly{
+	background-color:lightgray;
+}
+.jtable-input-field-container
+{
+	-webkit-column-count: 2;
+	-webkit-column-gap: 1px;
+	-webkit-column-fill: auto;
+	-moz-column-count: 2;
+	-moz-column-gap: 1px;
+	-moz-column-fill: auto;
+	column-count: 2;
+	column-gap: 1px;
+	column-fill: auto;
+}
+
+.ui-widget input, .ui-widget select {
+    font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif;
+    font-size: 1em;
+    padding:2px;
+}
+
+form.jtable-dialog-form div.jtable-text-input input {
+    width: 300px;
+}
+
+div.jtable-textarea-input input,textarea
+{
+	width:300px;
+}
+
+div.jtable-input-label
+{
+	width:200px;
+}
+
+ui-dialog-content ui-widget-content
+{
+	width:300px;
+}
+
+.form-login {
+    background-color: #EDEDED;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 15px;
+    border-color:#d2d2d2;
+    border-width: 5px;
+    box-shadow:0 1px 0 #cfcfcf;
+}

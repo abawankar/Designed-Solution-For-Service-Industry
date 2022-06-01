@@ -1,0 +1,528 @@
+﻿@{
+    ViewBag.Message = "All Contacts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<style type="text/css">
+     .alphabet
+    {
+        margin-top:2px;
+        padding:5px;
+        border:1px solid #808080;
+        border-radius:2px;
+        cursor:pointer;
+        background-color:#ffffff;
+    }
+    .alphabet:hover
+    {
+        background-color:#ffd800;
+    }
+     .margin-top
+    {
+        margin-top:6px;
+    }
+    .float-right
+    {
+        float:right;
+    }
+    .link
+    {
+        color:#0b09f8;
+    }
+</style>
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink(" All Account", "Index", "NewAccount") |
+        @Html.ActionLink("Duplicate Contact", "Duplicate", "AllContacts") |
+        <input type="hidden" id="contactlist" name="contactlist" />
+        <input type="hidden" id="mailtime" name="mailtime" />
+        First Letter On
+        <input class="search-box" title="Press enter to search" style="width:100px;" type="text" id="first" name="first" placeholder="First Name">
+        <input class="search-box" title="Press enter to search" style="width:100px;" type="text" id="last" name="last" placeholder="Last Name">
+        <input class="search-box" type="text" id="find" placeholder="Search in contact" />
+        @Html.DropDownList("type", new SelectList((ViewBag.type) as SelectList, "Value", "Text"), "Types",new {@class="search-box" })
+        <button type="button" id="search" value="Filter" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="clear" value="Clear" class="btn btn-success btn-sm">
+            <span class="fa fa-refresh" aria-hidden="true"></span> Refresh
+        </button>
+
+      
+    </div>
+    <div class="panel-heading">
+        <input class="search-box" type="text" id="contType" placeholder="Contact Type" />
+        <input class="search-box" type="text" id="contactgp" placeholder="Contact Group" />
+        <input class="search-box" type="text" id="account" placeholder="Account" />
+        <input class="search-box" type="text" id="accountCat" placeholder="Account Category" />
+        <input class="search-box" type="text" id="country" placeholder="Country" />
+        <input class="search-box" type="text" id="city" placeholder="City" />
+    </div>
+    <div class="panel-body">
+        <div id="contactTable"></div>
+        <div id="dialog-edit2" style="display: none"></div>
+        <div id="dialog-edit1" style="display: none"></div>
+    </div>
+</div>
+
+
+
+ 
+
+<script type="text/javascript">
+
+    $(function () {
+        $.getJSON("/AllContacts/GetCountry", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#country").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactGroup", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contactgp").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccountCat", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#accountCat").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetCity", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#city").igCombo({
+                width: "150px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Name",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccount", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#account").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactType", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contType").igCombo({
+                width: "150px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    //---- Contact Table ------
+    $(document).ready(function () {
+        //Dialog form
+        $("#dialog-edit2").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        $("#dialog-edit1").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        $('#contactTable').jtable({
+            title: 'Contact List',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("ContactList")',
+                createAction: '@Url.Action("AddContact")',
+                updateAction: '@Url.Action("EditContact","NewAccount")',
+            },
+             fields: {
+                 Id: {
+                     title: 'Id',
+                     width: '1%',
+                     key: true,
+                     create: false,
+                     edit: false,
+                     list: false
+                 },
+                 Accountid: {
+                     title: 'Account Name',
+                     width: '2%',
+                     options: '@Url.Action("GetAccountOptions")',
+                     list: false,
+                     edit:false
+                 },
+                 AccountName: {
+                     title: 'Account Name',
+                     width: '5%',
+                     edit: false,
+                     create: false
+                 },
+                 Salutation: {
+                     title: 'Salutation',
+                     width: '2%'
+                 },
+                 FirstName: {
+                     title: 'FirstName',
+                     width: '5%'
+                 },
+                 MiddleName: {
+                     title: 'MiddleName',
+                     width: '5%',
+                     list: false
+                 },
+                 LastName: {
+                     title: 'LastName',
+                     width: '5%'
+                 },
+                 Title: {
+                     title: 'Title',
+                     width: '5%',
+                     list: false
+                 },
+                 Department: {
+                     title: 'Department',
+                     width: '5%',
+                     list: false
+                 },
+                 Phone: {
+                     title: 'Phone',
+                     width: '5%',
+                     list: false
+                 },
+                 PhoneDirect: {
+                     title: 'Phone Direct',
+                     width: '5%'
+                 },
+                 Mobile: {
+                     title: 'Mobile',
+                     width: '5%'
+                 },
+                 Messanger: {
+                     title: 'Messenger',
+                     width: '5%'
+                 },
+                 Email: {
+                     title: 'Email',
+                     width: '5%'
+                 },
+                 EmailOpt: {
+                     title: 'EmailOpt',
+                     width: '2%',
+                     type: 'checkbox',
+                     values: { 'false': 'Yes', 'true': 'No' },
+                     defaultValue: 'false',
+                 },
+                 AddressInformation: {
+                     title: '',
+                     width: '5%',
+                     list: false,
+                     input: function (data) {
+                         return '<div style="font-weight:bold;color:#015941;">Address Information </div>';
+                     }
+                 },
+                 Street: {
+                     title: 'Street',
+                     width: '5%',
+                     type: 'textarea',
+                     list: true
+                 },
+                 City: {
+                     title: 'City',
+                     width: '2%'
+                 },
+                 StateProvince: {
+                     title: 'StateProvince',
+                     width: '2%',
+                     list: false
+                 },
+                 ZipPostalCode: {
+                     title: 'ZipPostalCode',
+                     width: '2%',
+                     list: false
+                 },
+                 CountryId: {
+                     title: 'Country',
+                     width: '2%',
+                     options: '@Url.Action("GetCountryOptions","Country",new {area=string.Empty})'
+                 },
+                 Modify: {
+                     title: 'Modifier',
+                     list: false,
+                     create: false,
+                     input: function (data) {
+                         if (data.record.Modifyby != null) {
+                             return '<input type="text" readonly class="jtable-input-readonly" name="Mod" value="' + data.record.Modifyby.EmpName + '/' + data.record.ModifyDate.toString() + '"/>';
+                         }
+                     }
+                 },
+                 ModifyDate: {
+                     title: 'DateTime Now',
+                     list: false,
+                     create: false,
+                     input: function (data) {
+                         return '<input type="text" readonly class="jtable-input-readonly" name="ModifyDate" value="' + getDateTime() + '"/>';
+                     }
+                 },
+                 ContactType: {
+                     title: '',
+                     width: '0.5%',
+                     sorting: false,
+                     create: false,
+                     edit: false,
+                     listClass: 'child-opener-image-column',
+                     display: function (data) {
+                         var $img = $('<img title="Contact Type" class="child-opener-image" src="/Content/Images/details.png" width=22 />');
+                         $img.click(function () {
+                             $('#contactTable').jtable('openChildTable', $img.closest('tr'),
+                             {
+                                 title: data.record.AccountName,
+                                 paging: false,
+                                 actions: {
+                                     listAction: '@Url.Action("ListOfContType")?id=' + data.record.Id,
+                                     deleteAction: '@Url.Action("DeleteContactType")?contid=' + data.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: true
+                                    },
+                                    Name: {
+                                        title: 'Contact Type',
+                                        width: '20%'
+                                    },
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/Add.png',
+                                        text: 'Add Contact Type',
+                                        click: function () {
+                                            var flage = '@User.IsInRole("Admin")';
+                                            var man = '@User.IsInRole("Management")'
+                                            if (flage == 'True' || man == 'True') {
+                                                url = $('@Html.ActionLink("ContactType", "ContTypeList","AllContacts")').attr('href');
+                                                url = url + "?id=" + data.record.Id;
+                                                $("#dialog-edit1").dialog("option", "title", "Add Contact Type");
+                                                $("#dialog-edit1").dialog('open');
+                                                return false;
+                                            } else {
+                                                alert("Restricted Area, Please contact System Administrator");
+                                            }
+                                        }
+                                    }]
+                                }
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+               },
+             },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "AllContacts/ExportData";
+                            window.open(url);
+                        }
+                    }
+                },
+                {
+                    icon: '/Content/Images/import.png',
+                    text: 'Import',
+                    click: function () {
+                        var flage = '@User.IsInRole("Admin")';
+                        var man = '@User.IsInRole("Management")'
+                        if (flage == 'True' || man == 'True') {
+                            url = "AllContacts/Import";
+                            $("#dialog-edit2").dialog("option", "title", "Import Contacts - Select File");
+                            $("#dialog-edit2").dialog('open');
+                        } else {
+                            alert("Restricted Area, Please contact System Administrator");
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="FirstName"]').addClass('validate[required]');
+                data.form.find('input[name="LastName"]').addClass('validate[required]');
+                data.form.find('input[name="City"]').addClass('validate[required]');
+                data.form.find('input[name="Email"]').addClass('validate[required,custom[email]]');
+                if (data.formType == 'create') {
+                    data.form.find('select[name="Accountid"]').change(function (e) {
+                        var id = data.form.find('select[name="Accountid"]').val();
+                        $.ajax({
+                            type: 'POST',
+                            datatype: 'JSON',
+                            url: "@Url.Action("GetAccountAddress","AllContacts")",
+                        data: { actid: id },
+                        success: function (data) {
+                            $.each(data.Result, function (i, item) {
+                                $("#Edit-Street").val(item.Street);
+                                $("#Edit-City").val(item.City);
+                                $("#Edit-StateProvince").val(item.StateProvince);
+                                $("#Edit-ZipPostalCode").val(item.ZipPostalCode);
+                                $("#Edit-CountryId").val(item.Country.Id).attr("selected", "selected");;
+                            });
+                        },
+                        error: function () {
+                        }
+                        });
+                       
+                    });
+                }
+                
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+         });
+        $('#contactTable').jtable('load', {
+            col:'load'
+        });
+
+
+        $("#contactid").change(function (e) {
+            e.preventDefault();
+            $('#type').val('')
+        });
+
+        $("#type").change(function (e) {
+            e.preventDefault();
+            $('#contactid').val('')
+        });
+
+        $("#clear").click(function (e) {
+            e.preventDefault();
+            $("#contType").igCombo("selectedIndex", -1);
+            $("#contactgp").igCombo("selectedIndex", -1);
+            $("#account").igCombo("selectedIndex", -1);
+            $("#country").igCombo("selectedIndex", -1);
+            $("#city").igCombo("selectedIndex", -1);
+            $("#accountCat").igCombo("selectedIndex", -1);
+            $('#find').val('');
+            $("#type").val('');
+            $("#first").val('');
+            $("#last").val('');
+            $('#contactTable').jtable('load', {
+                col: 'load'
+            });
+        });
+
+        $("#first").focus(function (e) {
+            $('#last').val('');
+            e.preventDefault();
+        });
+        $("#last").focus(function (e) {
+            $('#first').val('');
+            e.preventDefault();
+        });
+
+        $("#search").click(function (e) {
+            var country = $("#country").igCombo("values");
+            var city = $("#city").igCombo("values");
+            var account = $("#account").igCombo("values");
+            var accountCat = $("#accountCat").igCombo("values");
+            var contType = $("#contType").igCombo("values");
+            var contgp = $("#contactgp").igCombo("values");
+            var contgp = $("#contactgp").igCombo("values");
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                find: $("#find").val(),actCat:accountCat.toString(),contType: contType.toString(), type: $("#type").val(), contgp: contgp.toString(), ctryid: country.toString(), city: city.toString(), acname: account.toString(), first: $('#first').val(), last: $('#last').val()
+            });
+        });
+    });
+
+    // -------- End Mail Template
+
+</script>

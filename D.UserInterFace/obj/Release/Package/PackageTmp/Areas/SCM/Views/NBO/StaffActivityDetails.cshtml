@@ -1,0 +1,59 @@
+﻿@{
+    ViewBag.Title = "Staff Activity Details";
+}
+
+<style type="text/css">
+    .width
+    {
+        width:125px;
+    }
+</style>
+<div class="filtering">
+    @Html.ActionLink("Dashboard","Index","Home") | 
+    @if (HttpContext.Current.User.IsInRole("User"))
+    {
+        @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"));
+    }
+    else
+    {
+        @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "File Handler");
+    }
+    Date Of Request-From:<input type="date" id="dateFrom" class="width" />To:<input type="date" id="dateTo"  class="width" /> 
+    <input type="button" id="filter" value="Generate" />
+</div>
+<div id="act" style="display:none;">
+   @{Html.RenderAction("ActivityDetailsReport");}
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $("#filter").click(function (e) {
+            var datefrom = $('#dateFrom').val();
+            var dateto = $('#dateTo').val()
+            var empid = $('#Emp').val();
+
+            if (empid == "") {
+                alert("Please select file handler");
+                return;
+            }
+            e.preventDefault();
+            var act = $('#act');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("ActivityDetailsReport","NBO")",
+                data: { empid: empid, dateFrom: datefrom, dateTo: dateto },
+                success: function (data) {
+                    act.html("");
+                    act.html(data);
+                    act.show();
+                },
+                error: function () {
+                }
+            });
+        });
+        
+        
+    });
+</script>

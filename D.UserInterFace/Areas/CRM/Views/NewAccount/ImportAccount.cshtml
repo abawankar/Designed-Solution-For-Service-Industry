@@ -1,0 +1,134 @@
+﻿
+@{
+    ViewBag.Title = "ImportAccount";
+}
+
+<div class="filtering">
+    @Html.ActionLink("Submit Data","ProcessImport","NewAccount")
+</div>
+
+<div id="table"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $('#table').jtable({
+            title: 'Import Account - Draft',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("ImportAccountList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                dup: {
+                    title: 'Duplicate',
+                    width: '2%',
+                    options: '@Url.Action("GetStatusOptions","EnquiryStatus")',
+                    display: function (data) {
+                        if (data.record.dup == 1)
+                            return "<div class='cancelled'>" + "DUPLICATE" + "</div>";
+                    }
+                 },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '6%',
+                },
+                Industry: {
+                    title: 'Account Category',
+                    width: '2%',
+                    display: function (d) {
+                        return d.record.Industry.Name;
+                    }
+                 },
+                Website: {
+                    title: 'Website',
+                    width: '5%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '6%',
+                    type:'textarea'
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '5%'
+                },
+                Fax: {
+                    title: 'Fax',
+                    width: '2%'
+                },
+                Messanger: {
+                    title: 'Messanger',
+                    width: '2%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '2%'
+                },
+                AddressInformation: {
+                    title: '',
+                    width: '2%',
+                    input: function (data) {
+                        return '<div style="font-weight:bold;color:blue;">Address Information </div>';
+                    }
+                },
+                
+                Street: {
+                    title: 'Street',
+                    width: '5%'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                State: {
+                    title: 'State',
+                    width: '2%'
+                },
+                ZipPostalCode: {
+                    title: 'ZipPostalCode',
+                    width: '2%',
+                },
+                Country: {
+                    title: 'Country',
+                    width: '2%',
+                    display: function (d) {
+                        return d.record.Country.Name;
+                    }
+                },
+                Date: {
+                    title: 'Creation Date',
+                    type: 'date',
+                    width: '2%',
+                    display: function (data) {
+                        return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                Owner: {
+                    title: 'Owner',
+                    width: '5%',
+                    display: function (d) {
+                        return d.record.Owner.EmpName;
+                    }
+                },
+            },
+        });
+        $('#table').jtable('load');
+
+
+    });
+</script>
+
+

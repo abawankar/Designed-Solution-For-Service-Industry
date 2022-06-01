@@ -1,0 +1,109 @@
+﻿@{
+    ViewBag.Title = "BPRIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.DropDownList("Year", new SelectList((ViewBag.Year) as SelectList, "Value", "Text"), "Year",new {@class="search-box" }) |
+        @if (HttpContext.Current.User.IsInRole("User") || HttpContext.Current.User.IsInRole("Manager"))
+        {
+            @Html.DropDownList("Branch", new SelectList((ViewBag.Branch) as SelectList, "Value", "Text"),null, new { @class = "search-box" })
+        }
+        else
+        {
+            @Html.DropDownList("Branch", new SelectList((ViewBag.Branch) as SelectList, "Value", "Text"), "Branch", new { @class = "search-box" })
+        }
+
+        File Handler:
+        @if (HttpContext.Current.User.IsInRole("User"))
+        {
+            @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"),null, new { @class = "search-box" });
+        }
+        else
+        {
+            @Html.DropDownList("Emp", new SelectList((ViewBag.Emp) as SelectList, "Value", "Text"), "All", new { @class = "search-box" });
+        }
+        Nature: @Html.DropDownList("Nature", new SelectList((ViewBag.Nature) as SelectList, "Value", "Text"), "All", new { @class = "search-box" })
+
+        <button type="button" id="filter" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter 
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="export" value="Export To Excel" class="btn btn-success btn-sm">
+            <span class="fa fa-file-excel-o" aria-hidden="true"></span> Export To Excel
+        </button>
+
+    </div>
+    <div class="panel-body">
+        
+        <div id="bpr" style="display:none;">
+            @{Html.RenderAction("BPRReport");}
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#filter").click(function (e) {
+            var year = $('#Year').val();
+            var branch = $('#Branch').val();
+            var empid = $('#Emp').val();
+            var natid = $('#Nature').val();
+            e.preventDefault();
+            var bpr = $('#bpr');
+            bpr.hide();
+            $('#loading').show();
+
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("BPRReport","Budget")",
+                data: { year: year,branch:branch,empid: empid, natid: natid },
+                success: function (data) {
+                    bpr.html("");
+                    bpr.html(data);
+                    bpr.show();
+                    $('#loading').hide();
+                },
+                error: function () {
+                }
+            });
+        });
+
+
+        $("#Branch").change(function (e) {
+            var id = $('#Branch').val();
+            e.preventDefault();
+            var emp = $('#Emp');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetEmployee","Company",new {area=string.Empty },null)",
+                data: { branid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">File Handler</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.Id + "\">" + item.EmpName + "</option>";
+
+                    });
+                    emp.html("");
+                    emp.html(items);
+                },
+                error: function () {
+                }
+            });
+        });
+
+        $("#export").click(function (e) {
+            var url = "Export?year=" + $('#Year').val() + "&branch=" + $('#Branch').val() + "&empid=" + $('#Emp').val() + "&natid=" + $('#Nature').val();
+            window.open(url);
+        });
+    });
+</script>

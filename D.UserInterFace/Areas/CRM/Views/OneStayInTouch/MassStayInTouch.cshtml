@@ -1,0 +1,203 @@
+﻿@model IEnumerable<ViewUI.Models.CRM.ContactModel>
+@{
+    ViewBag.Message = "Staty In Touch";
+}
+
+@section Styles{
+    <link href="../../Content/bootstrap.css" rel="stylesheet" />
+}
+
+<style type="text/css">
+    input[type='text']{
+    border: 1px solid #ccc9c9;
+    width: 100%;
+    border-radius:5px;
+    -webkit-box-sizing: border-box; /* <=iOS4, <= Android  2.3 */
+       -moz-box-sizing: border-box; /* FF1+ */
+            box-sizing: border-box; /* Chrome, IE8, Opera, Safari 5.1*/
+}
+    textarea {
+    border: 1px solid #ccc9c9;
+    border-radius:5px;
+    width: 100%;
+    height:100px;
+    -webkit-box-sizing: border-box; /* <=iOS4, <= Android  2.3 */
+    -moz-box-sizing: border-box; /* FF1+ */
+    box-sizing: border-box; /* Chrome, IE8, Opera, Safari 5.1*/
+}
+    .width
+    {
+        width:50%;
+    }
+    .margin-bottom
+    {
+        margin-bottom:0px;
+    }
+    .textalign
+    {
+        text-align:center;
+    }
+    .fullWidth
+    {
+        width:100%;
+    }
+    .float-right
+    {
+        float:right;
+    }
+    .pointer
+    {
+        cursor:pointer;
+    }
+    div.editable {
+    width: 97%;
+    height:100px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius:5px;
+}
+      
+</style>
+
+@using (Html.BeginForm("SendMassStayInTouch", "OneStayInTouch", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{ 
+<div class="panel panel-info" >
+    <div class="panel margin-bottom panel-heading">Stay in Touch
+        <strong class="float-right">@Html.ActionLink(" Cancel","ContactList","OneStayInTouch")</strong>
+    </div>
+    <div class="panel-body">
+        <input type="hidden" value="@ViewBag.contactlist" name="contactlist" />
+        <input type="hidden" id="notes" name="notes" />
+        <input type="hidden" id="currentinfo" name="currentinfo" />
+        <table class="table width">
+            <tr><td colspan="2"><strong>Edit Email:</strong>
+                <button id="save" type="submit" class="float-right">Send</button>
+                </td></tr>
+            <tr>
+                <td>To</td>
+                <td><label>
+                    @{string mail="";}
+                    @foreach (var to in Model)
+                    {
+                        mail = to.Email + ";" + mail;
+                    }
+                    @mail
+                    </label></td>
+            </tr>
+            <tr><td>CC</td>
+                <td><input type="text" name="cc" /></td>
+            </tr>
+             <tr><td>BCC</td>
+                <td><input type="text" name="bcc" /></td>
+            </tr>
+            <tr><td>Reply To</td>
+                <td><input type="text" name="replyto" /></td>
+            </tr>
+             <tr><td>Subject</td>
+                <td><input type="text" name="subject" value="Stay in Touch" /></td>
+            </tr>
+             <tr><td>Note
+            
+                @Html.DropDownList("noteTemplate",new SelectList((ViewBag.noteTemplate) as SelectList,"Value","Text"),"Select Note") 
+                 </td>
+                <td><div id="editable" class="editable"></div></td>
+            </tr>
+            <tr><td colspan="2"><strong>Current Information:</strong></td></tr>
+            <tr>
+                <td></td>
+                <td>
+                    <div id="CurrentInfo">
+                        <table style="width:450px;background-color:#e6e0e0;border:1px solid #ffd800;">
+                            <thead>
+                                <tr>
+                                    <th>Contact Name</th>
+                                    <th>Title</th>
+                                    <th>Department</th>
+                                    <th>Account</th>
+                                    <th>Street</th>
+                                    <th>City-PinCode</th>
+                                    <th>Country</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Mobile</th>
+                                    <th>Fax</th>
+                                </tr>
+                            </thead>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.FirstName @item.LastName</td>
+                                    <td>@item.Title</td>
+                                    <td>@item.Department</td>
+                                    <td>@item.AccountName</td>
+                                    <td>@item.City - @item.ZipPostalCode</td>
+                                    <td>@item.StateProvince</td>
+                                    <td>@item.Country.Name</td>
+                                    <td>@item.Email</td>
+                                    <td>@item.Phone</td>
+                                    <td>@item.Mobile</td>
+                                    <td>@item.Fax</td>
+                                </tr>
+                            }
+                       
+                            <tr style="height:10px;background-color:#ffd800;">
+                                <td colspan="11"> </td>
+                            </tr>
+                        </table>
+                    
+                    </div>
+                    
+                </td>
+            </tr>
+            <tr>
+                <td>Signature</td>
+                <td>
+                    <textarea name="signature"></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.editable').each(function () {
+            this.contentEditable = true;
+        });
+
+        $("#save").click(function (e) {
+            var data = $("#editable").html();
+            var curr = $("#CurrentInfo").html();
+            $("#notes").val(data);
+            $("#currentinfo").val(curr);
+        });
+
+        $("#noteTemplate").change(function (e) {
+            e.preventDefault();
+            var id = $("#noteTemplate").val();
+            if (id == "")
+                id = 0;
+            var note = $("#editable");
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetTemplate","InTouch")",
+                data: { id: id },
+                success: function (data) {
+                    var items = "";
+                    $.each(data.Result, function (i, item) {
+                        items = item.EmailBody;
+                    });
+                    note.html("");
+                    note.html(items);
+                },
+                error: function () {
+                }
+                 });
+        });
+
+
+    });
+</script>

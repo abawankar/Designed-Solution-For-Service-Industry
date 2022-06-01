@@ -1,0 +1,13 @@
+﻿@model D.UserInterFace.Areas.CRM.Models.AccountMailLogModel
+
+@{
+    ViewBag.Title = "Mailbody";
+}
+
+<table >
+     <tr>
+         <td class="width"> 
+             @Html.Raw(Model.Mailbody)
+         </td>
+     </tr>
+ </table>

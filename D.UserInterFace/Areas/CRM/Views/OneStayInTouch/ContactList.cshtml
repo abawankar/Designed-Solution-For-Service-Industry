@@ -1,0 +1,323 @@
+﻿@{
+    ViewBag.Title = "Stay In Touch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="../../Content/bootstrap.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/js/infragistics.css")" rel="stylesheet" type="text/css" />
+}
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/js/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/js/infragistics.lob.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        <input type="text" id="contactgp" placeholder="Contact Group" />
+        <input type="text" id="actType" placeholder="Account Type" />
+        <input type="text" id="accountCat" placeholder="Account Category" />
+        <input type="text" id="account" placeholder="Account" />
+    </div>
+
+    <div class="panel-heading">
+        <input type="text" id="contType" placeholder="Contact Type" />
+        <input type="text" id="country" placeholder="Country" />
+        <input type="text" id="city" placeholder="City" />
+    </div>
+
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        @Html.ActionLink("Log", "Index", "OneStayInTouch") |
+        @Html.ActionLink("All Contacts", "Index", "AllContacts") |
+        <input type="hidden" id="contactlist" name="contactlist" />
+        <input type="hidden" id="mailtime" name="mailtime" />
+        <input class="search-box" title="Press enter to search" style="width:100px;" type="text" id="first" name="first" placeholder="First Name">
+        <input class="search-box" title="Press enter to search" style="width:100px;" type="text" id="last" name="last" placeholder="Last Name">
+        @Html.DropDownList("type", new SelectList((ViewBag.type) as SelectList, "Value", "Text"), "Types",new {@class="search-box" })
+        
+        <button type="button" id="search" value="Generate" class="btn btn-info btn-sm">
+            <span class="fa fa-filter" aria-hidden="true"></span> Filter
+            <span id="loading" class="fa fa-spin fa-spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="clear" value="Export To Excel" class="btn btn-success btn-sm">
+            <span class="fa fa-refresh" aria-hidden="true"></span> Refresh
+        </button>
+
+        <input style="float:right;" type="button" id="contactGroup" title="Please select more than one contact !" value="Send Mass SIT">  
+    </div>
+    <div class="panel-body">
+        <div id="contactTable"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    var width = "300px"
+    $(function () {
+        $.getJSON("/AllContacts/GetCountry", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#country").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetCity", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#city").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Name",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactGroup", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contactgp").igCombo({
+                width: "270px",
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetContactType", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#contType").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccountType", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#actType").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccount", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#account").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(function () {
+        $.getJSON("/AllContacts/GetAccountCat", function (jd) {
+            var data = JSON.parse(JSON.stringify(jd));
+            $("#accountCat").igCombo({
+                width: width,
+                dataSource: data,
+                textKey: "Name",
+                valueKey: "Id",
+                multiSelection: "onWithCheckboxes"
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        $('#contactTable').jtable({
+            title: 'Contact List For SIT',
+            paging: true,
+            pagesize: 3,
+            sorting: true,
+            selecting: true,
+            multiselect: true,
+            selectOnRowClick:false,
+            selectingCheckboxes: true,
+            actions: {
+                listAction: '@Url.Action("ListOfContact","OneStayInTouch")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                FirstName: {
+                    title: 'FirstName',
+                    width: '10%'
+                },
+                LastName: {
+                    title: 'LastName',
+                    width: '10%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '10%'
+                },
+                City: {
+                    title: 'City',
+                    width: '10%',
+                },
+                Country: {
+                    title: 'Country',
+                    width: '5%',
+                    display: function (data) {
+                        return data.record.Country.Name;
+                    },
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '10%',
+                },
+                sit: {
+                    title: '',
+                    width: '1%',
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<a title="Stay in Touch" class="child-opener-image link" src="#"><strong>StatyInTouch</strong></a>');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("sit", "StayInTouch","InTouch")').attr('href');
+                             url = url + "?id=" + data.record.Id;
+                             window.location.href = url;
+                         });
+                         return $img;
+                     }
+                 },
+
+            },
+            selectionChanged: function () {
+                var $selecedRows = $('#contactTable').jtable('selectedRows');
+            }
+        });
+
+        $("#Country").change(function (e) {
+            $("#city").val('');
+            var id = $('#Country').val();
+            if (id == null || id == "") {
+                id = 0;
+            }
+            e.preventDefault();
+            var city = $('#city');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetCityByCountry","OneStayInTouch")",
+                data: { contid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">All City</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.City + "\">" + item.City + "</option>";
+                    });
+                    city.html("");
+                    city.html(items);
+                },
+                error: function () {
+                }
+            });
+           
+         });
+
+        $("#first").focus(function (e) {
+            $('#last').val('');
+            e.preventDefault();
+        });
+        $("#last").focus(function (e) {
+            $('#first').val('');
+            e.preventDefault();
+        });
+
+        $("#search").click(function (e) {
+            var country = $("#country").igCombo("values");
+            var city = $("#city").igCombo("values");
+            var account = $("#account").igCombo("values");
+            var accountCat = $("#accountCat").igCombo("values");
+            var contType = $("#contType").igCombo("values");
+            var actType = $("#actType").igCombo("values");
+            var contgp = $("#contactgp").igCombo("values");
+            e.preventDefault();
+            $('#contactTable').jtable('load', {
+                contType: contType.toString(), actType: actType.toString(), actCat: accountCat.toString(), type: $("#type").val(), contgp: contgp.toString(), ctryid: country.toString(), city: city.toString(), acname: account.toString(), first: $('#first').val(), last: $('#last').val()
+            });
+        });
+
+        $("#clear").click(function (e) {
+            e.preventDefault();
+            $("#contactgp").igCombo("selectedIndex", -1);
+            $('#type').val('');
+            $("#account").igCombo("selectedIndex", -1);
+            $("#accountCat").igCombo("selectedIndex", -1);
+            $("#actType").igCombo("selectedIndex", -1);
+            $("#contType").igCombo("selectedIndex", -1);
+            $("#country").igCombo("selectedIndex", -1);
+            $("#city").igCombo("selectedIndex", -1);
+            $("#first").val('');
+            $("#last").val('');
+            var id = 0;
+            var city = $('#city');
+            $.ajax({
+                type: 'POST',
+                datatype: 'JSON',
+                url: "@Url.Action("GetCityByCountry","OneStayInTouch")",
+                data: { contid: id },
+                success: function (data) {
+                    var items = "";
+                    items += "<option value=\"0\">All City</option>";
+                    $.each(data.Result, function (i, item) {
+                        items = items + "<option value=\"" + item.City + "\">" + item.City + "</option>";
+                    });
+                    city.html("");
+                    city.html(items);
+                    $('#contactTable').jtable('load');
+                },
+                error: function () {
+                }
+            });
+           
+        });
+
+        $('#contactGroup').button().click(function () {
+            var $selecedRows = $('#contactTable').jtable('selectedRows');
+            var list = "0";
+            $selecedRows.each(function () {
+                var record = $(this).data('record');
+                list = list + "," + record.Id;
+            });
+            if (list.length < 5) {
+                alert("Please select more than one contact");
+                return;
+            }
+            url = "MassStayInTouch?idlist=" + list;
+            window.location.href = url;
+        });
+        
+    });
+</script>

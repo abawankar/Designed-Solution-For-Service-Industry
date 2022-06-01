@@ -1,0 +1,1024 @@
+﻿@{
+    ViewBag.Title = "New Account";
+}
+
+@section Styles{
+    <link href="@Url.Content("~/Scripts/Chart/infragistics.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/Chart/infragistics.ui.chart.css")" rel="stylesheet" type="text/css" />
+    <link href="../../Content/bootstrap.css" rel="stylesheet" />
+}
+
+@section Script{
+
+    <!-- Ignite UI Required Combined JavaScript Files -->
+    <script src="@Url.Content("~/Scripts/Chart/infragistics.core.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Chart/infragistics.dv.js")" type="text/javascript"></script>
+}
+
+<div class="filtering">
+     @Html.ActionLink("Dashboard","Index","Home") | 
+    
+    @Html.ActionLink("All Contacts","Index","AllContacts") | 
+    @Html.ActionLink("Mail Log", "Index", "AccountMailLog")
+</div>
+
+<div class="filtering">
+    @Html.DropDownList("type",new SelectList((ViewBag.type) as SelectList,"Value","Text"),"All Types") 
+    @Html.DropDownList("Country",new SelectList((ViewBag.Country) as SelectList,"Value","Text"),"All Country") |
+    @Html.DropDownList("account",new SelectList((ViewBag.account) as SelectList,"Value","Text"),"All Account") |
+    <input type="text" id="name" placeholder="Search in account" /> | 
+    <input type="button" id="clear" value="Refresh" />
+</div>
+
+<div id="table"></div>
+<div id="dialog-edit" style="display: none"></div>
+<div id="dialog-edit1" style="display: none"></div>
+<div id="dialog-edit2" style="display: none"></div>
+<div id="dialog-edit3" style="display: none"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //Dialog form
+        $("#dialog-view").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 750,
+            height:400,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+        //Dialog form
+        $("#dialog-edit").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            height:400,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        //Dialog form
+        $("#dialog-edit1").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        //Dialog form
+        $("#dialog-edit2").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 550,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        $("#dialog-edit3").dialog({
+            title: '',
+            autoOpen: false,
+            resizable: false,
+            width: 800,
+            show: { effect: 'drop', direction: "up" },
+            modal: true,
+            draggable: true,
+            open: function (event, ui) {
+                $(this).load(url);
+                $(".ui-dialog-titlebar-close").show();
+            },
+            buttons: {
+                "Cancel": function () {
+                    $(this).dialog("close");
+                },
+            }
+        });
+
+        //End dialog form
+        
+        $('#table').jtable({
+            title: 'Account',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                AccountType: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Account Type" class="child-opener-image" src="Content/Images/details.png" width=22 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.AccountName,
+                                paging: false,
+                                actions: {
+                                    listAction: '@Url.Action("ListOfActType")?id=' + data.record.Id,
+                                    deleteAction: '@Url.Action("DeleteAccountType")?actid=' + data.record.Id,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: true
+                                    },
+                                    Name: {
+                                        title: 'Account Type',
+                                        width: '20%'
+                                    },
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/Add.png',
+                                        text: 'Add Account Type',
+                                        click: function () {
+                                            var flage = '@User.IsInRole("Admin")';
+                                            var man = '@User.IsInRole("Management")'
+                                            if (flage == 'True' || man == 'True') {
+                                                url = $('@Html.ActionLink("AccountType", "AccountList","NewAccount")').attr('href');
+                                                url = url + "?id=" + data.record.Id;
+                                                $("#dialog-edit1").dialog("option", "title", "Add Account Type");
+                                                $("#dialog-edit1").dialog('open');
+                                                return false;
+                                            } else {
+                                                alert("Restricted Area, Please contact System Administrator");
+                                            }
+                                        }
+                                    }]
+                                }
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                   },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                    options: { "Client": "Client", "Supplier": "Supplier" }
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '6%',
+                    dependsOn: 'Type',
+                    options: function (data) {
+                        return 'NewAccount/GetAccountOptions?type=' + data.dependedValues.Type;
+                    },
+                    display: function (act) {
+                        var $img = $('<a title="Account Details" class="child-opener-image" src="">' + act.record.AccountName + '</a>');
+                        $img.click(function () {
+                            url = "NewAccount/FullDetails"
+                            url = url + "?id=" + act.record.Id;
+                            $("#dialog-edit3").dialog("option", "title", "Account Details");
+                            $("#dialog-edit3").dialog('open');
+                        });
+                        return $img
+                    }
+                },
+                IndustryId: {
+                    title: 'Account Category',
+                    width: '2%',
+                    options: '@Url.Action("GetIndustryOptions","Industry")'
+                 },
+                Website: {
+                    title: 'Website',
+                    width: '5%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '6%',
+                    type: 'textarea',
+                    visibility: 'hidden'
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '5%'
+                },
+                Fax: {
+                    title: 'Fax',
+                    width: '2%'
+                },
+                Email: {
+                    title: 'Email',
+                    width: '2%'
+                },
+                AddressInformation: {
+                    title: '',
+                    width: '2%',
+                    list: false,
+                    input: function (data) {
+                        return '<div style="font-weight:bold;color:#015941;">Address Information </div>';
+                    }
+                },
+                Street: {
+                    title: 'Street',
+                    width: '5%',
+                    type:'textarea'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                State: {
+                    title: 'State',
+                    width: '2%'
+                },
+                ZipPostalCode: {
+                    title: 'ZipPostalCode',
+                    width: '2%',
+                    list: false
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '2%',
+                    options: '@Url.Action("GetCountryOptions","Country")'
+                },
+                Date: {
+                    title: 'Creation Date',
+                    type: 'date',
+                    width: '2%',
+                    create: false,
+                    display: function (data) {
+                        return moment(data.record.Date).format('DD-MMM-YYYY')
+                    },
+                },
+                Empid: {
+                    title: 'Owner',
+                    width: '5%',
+                    create: false,
+                    edit: false,
+                    options: '@Url.Action("GetEmployeeList","Employee")',
+                },
+                Modifier: {
+                    title: 'Modifier',
+                    list: true,
+                    visibility: 'hidden',
+                    create: false,
+                    input: function (data) {
+                        if (data.record.Modifyby != null) {
+                            return '<input type="text" readonly class="jtable-input-readonly" name="FileNumber" value="' + data.record.Modifyby.EmpName + '/' + data.record.ModifyDate.toString() + '"/>';
+                        }
+                    },
+                    display: function (data) {
+                        if (data.record.Modifyby != null) {
+                            return data.record.Modifyby.EmpName + '/' + data.record.ModifyDate.toString();
+                        }
+                    }
+
+                },
+                ModifyDate: {
+                    title: 'DateTime Now',
+                    list: false,
+                    create: false,
+                    input: function (data) {
+                        return '<input type="text" readonly class="jtable-input-readonly" name="ModifyDate" value="' + getDateTime() + '"/>';
+                    }
+                },
+                map: {
+                    title: '',
+                    width: '1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<img title="Map" class="child-opener-image" src="Content/Images/gmap.png" width=20 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("Map", "ViewMap", "NewAccount")').attr('href');
+                            url = url + "?id=" + data.record.Id;
+                            $("#dialog-edit").dialog("option", "title", "Map:" + data.record.City);
+                            $("#dialog-edit").dialog('open');
+                        });
+                        return $img;
+                    }
+                },
+                AccountSummary: {
+                    title: '',
+                    width: '1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<img title="Account Summary" class="child-opener-image" src="Content/Images/graph.png" width=22 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("AccountSummary", "AccountSummary", "NewAccount")').attr('href');
+                            url = url + "?accountid=" + data.record.AccountId;
+                            $("#dialog-edit").dialog("option", "title", "Account Summary:" + data.record.AccountName);
+                            $("#dialog-edit").dialog('open');
+                        });
+                        return $img;
+                    }
+                },
+                mail: {
+                    title: '',
+                    width: '0.1%',
+                    create: false,
+                    edit: false,
+                    display: function (data) {
+                        var $img = $('<img title="Send Mail" class="child-opener-image" src="Content/Images/mail.png" width=20 />');
+                        $img.click(function () {
+                            url = $('@Html.ActionLink("Mail", "CreateMail", "NewAccount")').attr('href');
+                            url = url + "?id=" + data.record.Id + "&type=A";
+                            window.location.href = url;
+                        });
+                        return $img;
+                    }
+                  },
+                Files: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Files" class="child-opener-image" src="Content/Images/file.png" width=20 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.AccountName + " - Files",
+                                paging: true,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("FileList")?id=' + data.record.AccountId,
+                                },
+                                fields: {
+                                    Id: {
+                                        title: 'Id',
+                                        width: '1%',
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    Branch: {
+                                        title: 'Branch',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.Branch.Name;
+                                        }
+                                    },
+                                    FileHandler: {
+                                        title: 'File Handler',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.FileHandler.EmpName;
+                                        }
+                                    },
+                                    Nature: {
+                                        title: 'Nature',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.Nature.Name;
+                                        }
+                                    },
+                                    ClientName: {
+                                        title: 'Client',
+                                        width: '1%',
+                                        display: function (b) {
+                                            return b.record.ClientName.Name;
+                                        }
+                                    },
+                                    RequestDate: {
+                                        title: 'Request Date',
+                                        type: 'date',
+                                        width: '2%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return moment(data.record.RequestDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    FileNumber: {
+                                        title: 'FileNumber',
+                                        width: '1%'
+                                    },
+                                    ContactName: {
+                                        title: 'ContactName',
+                                        width: '2%',
+                                    },
+                                    CheckinDate: {
+                                        title: 'Check In',
+                                        type: 'date',
+                                        width: '3%',
+                                        display: function (data) {
+                                            return moment(data.record.CheckinDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    CheckOutDate: {
+                                        title: 'Check Out',
+                                        type: 'date',
+                                        width: '3%',
+                                        display: function (data) {
+                                            return moment(data.record.CheckOutDate).format('DD-MMM-YYYY')
+                                        },
+                                    },
+                                    StatusId: {
+                                        title: 'Status',
+                                        width: '2%',
+                                        options: '@Url.Action("GetStatusOptions","EnquiryStatus")',
+                                        display: function (data) {
+                                            if (data.record.StatusId == 1)
+                                                return "<div class='proposal'>" + "PROPOSAL STAGE" + "</div>";
+                                            if (data.record.StatusId == 2)
+                                                return "<div class='active'>" + 'ACTIVE' + "</div>";
+                                            if (data.record.StatusId == 3)
+                                                return "<div class='active'>" + 'POTENTIAL' + "</div>";
+                                            if (data.record.StatusId == 4)
+                                                return "<div class='confirmed'>" + 'CONFIRMED' + "</div>";
+                                            if (data.record.StatusId == 5)
+                                                return "<div class='confirmed'>" + 'CONTRACTED' + "</div>";
+                                            if (data.record.StatusId == 6)
+                                                return "<div class='confirmed'>" + 'OPERATED' + "</div>";
+                                            if (data.record.StatusId == 7)
+                                                return "<div class='confirmed'>" + 'CLOSED' + "</div>";
+                                            if (data.record.StatusId == 8)
+                                                return "<div class='cancelled'>" + 'INACTIVE' + "</div>";
+                                            if (data.record.StatusId == 9)
+                                                return "<div class='cancelled'>" + 'CANCELLED' + "</div>";
+                                        }
+                                    },
+                                    EventName: {
+                                        title: 'EventName',
+                                        width: '2%',
+                                    },
+                                    PaxNo: {
+                                        title: 'No of Pax',
+                                        width: '2%',
+                                    },
+                                    ContractValue: {
+                                        title: 'Contract Value',
+                                        width: '2%',
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.ContractValue.toFixed(0) + '</div>';
+                                        }
+                                    },
+                                    ContractCost: {
+                                        title: 'Contract Costs',
+                                        width: '2%',
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.ContractCost.toFixed(0) + '</div>';
+                                        }
+                                    },
+                                    Margin: {
+                                        title: 'Margin',
+                                        width: '0.5%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.Margin.toFixed(0) + '</div>';
+                                        }
+                                    },
+                                    MarginP: {
+                                        title: 'Margin%',
+                                        width: '1%',
+                                        create: false,
+                                        edit: false,
+                                        display: function (data) {
+                                            return '<div style="text-align:right">' + data.record.MarginP.toFixed(2) + '</div>';
+                                        }
+                                    },
+                                    Remarks: {
+                                        title: 'Remarks',
+                                        width: '2%',
+                                        type: 'textarea',
+                                        list: false
+                                    },
+                                   
+                                },
+                                toolbar: {
+                                    items: [{
+                                        icon: '/Content/Images/excel.png',
+                                        text: 'Export To Excel',
+                                        click: function () {
+                                            var r = confirm("Do you want to export?");
+                                            if (r == true) {
+                                                var url = "NewAccount/ExportFiles";
+                                                window.open(url);
+                                            }
+                                        }
+                                    }]
+                                },
+
+                            }, function (data) {
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        return $img;
+                    }
+                 },
+                Contact: {
+                    title: '',
+                    width: '0.5%',
+                    sorting: false,
+                    create: false,
+                    edit: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (data) {
+                        var $img = $('<img title="Contacts" class="child-opener-image" src="Content/Images/user.png" width=22 />');
+                        $img.click(function () {
+                            $('#table').jtable('openChildTable', $img.closest('tr'),
+                            {
+                                title: data.record.AccountName + " - Contact",
+                                paging: false,
+                                pagesize: 3,
+                                actions: {
+                                    listAction: '@Url.Action("ListContact")?id=' + data.record.Id,
+                                    updateAction: '@Url.Action("EditContact")',
+                                    deleteAction: '@Url.Action("DeleteContact")',
+                                    createAction: '@Url.Action("AddContact")?id=' + data.record.Id
+                                  },
+                                fields: {
+                                    Accountid: {
+                                        type: 'hidden',
+                                        defaultValue: data.record.Id
+                                    },
+                                      Id: {
+                                          title: 'Id',
+                                          width: '1%',
+                                          key: true,
+                                          create: false,
+                                          edit: false,
+                                          list: false
+                                      },
+                                      Salutation: {
+                                          title: 'Salutation',
+                                          width: '2%'
+                                      },
+                                      FirstName: {
+                                          title: 'FirstName',
+                                          width: '5%'
+                                      },
+                                      MiddleName: {
+                                          title: 'MiddleName',
+                                          width: '5%',
+                                          list: false
+                                      },
+                                      LastName: {
+                                          title: 'LastName',
+                                          width: '5%'
+                                      },
+                                      Title: {
+                                          title: 'Title',
+                                          width: '5%',
+                                          list: false
+                                      },
+                                      Department: {
+                                          title: 'Department',
+                                          width: '5%'
+                                      },
+                                      Phone: {
+                                          title: 'Phone',
+                                          width: '5%'
+                                      },
+                                      PhoneDirect: {
+                                          title: 'Phone Direct',
+                                          width: '5%'
+                                      },
+                                      Mobile: {
+                                          title: 'Mobile',
+                                          width: '5%'
+                                      },
+                                      Messanger: {
+                                          title: 'Messenger',
+                                          width: '5%'
+                                      },
+                                      Email: {
+                                          title: 'Email',
+                                          width: '5%'
+                                      },
+                                      EmailOpt: {
+                                          title: 'EmailOpt',
+                                          width: '2%',
+                                          type: 'checkbox',
+                                          values: { 'false': 'Yes', 'true': 'No' },
+                                          defaultValue: 'false',
+                                      },
+                                      AddressInformation: {
+                                          title: '',
+                                          width: '5%',
+                                          list: false,
+                                          input: function (data) {
+                                              return '<div style="font-weight:bold;color:#015941;">Address Information </div>';
+                                          }
+                                      },
+                                      Street: {
+                                          title: 'Street',
+                                          width: '5%',
+                                          type: 'textarea',
+                                          list: false
+                                      },
+                                      City: {
+                                          title: 'City',
+                                          width: '2%'
+                                      },
+                                      StateProvince: {
+                                          title: 'StateProvince',
+                                          width: '2%',
+                                          list: false
+                                      },                                     
+                                      ZipPostalCode: {
+                                          title: 'ZipPostalCode',
+                                          width: '2%',
+                                          list: false
+                                      },
+                                      CountryId: {
+                                          title: 'Country',
+                                          width: '2%',
+                                          options: '@Url.Action("GetCountryOptions","Country")'
+                                     },
+                                      Contactmap: {
+                                          title: '',
+                                          width: '0.1%',
+                                          create: false,
+                                          edit: false,
+                                          display: function (data) {
+                                              var $img = $('<img title="Map" class="child-opener-image" src="Content/Images/gmap.png" width=20 />');
+                                              $img.click(function () {
+                                                  url = $('@Html.ActionLink("Map", "ViewContactMap", "NewAccount")').attr('href');
+                                                  url = url + "?id=" + data.record.Id;
+                                                  $("#dialog-edit").dialog("option", "title", "Map:" + data.record.City);
+                                                  $("#dialog-edit").dialog('open');
+                                              });
+                                              return $img;
+                                          }
+                                      },
+                                    
+                                      Files: {
+                                          title: '',
+                                          width: '0.1%',
+                                          sorting: false,
+                                          create: false,
+                                          edit: false,
+                                          listClass: 'child-opener-image-column',
+                                          display: function (c) {
+                                              var $img = $('<img title="Files" class="child-opener-image" src="Content/Images/file.png" width=20 />');
+                                              $img.click(function () {
+                                                  $('#table').jtable('openChildTable', $img.closest('tr'),
+                                                  {
+                                                      title: c.record.FirstName + " - Files",
+                                                      paging: true,
+                                                      pagesize: 3,
+                                                      actions: {
+                                                          listAction: '@Url.Action("FileList")?id=' + data.record.AccountId + "&name=" + c.record.FirstName,
+                                                    },
+                                                    fields: {
+                                                        Id: {
+                                                            title: 'Id',
+                                                            width: '1%',
+                                                            key: true,
+                                                            create: false,
+                                                            edit: false,
+                                                            list: false
+                                                        },
+                                                        Branch: {
+                                                            title: 'Branch',
+                                                            width: '1%',
+                                                            display: function (b) {
+                                                                return b.record.Branch.Name;
+                                                            }
+                                                        },
+                                                        FileHandler: {
+                                                            title: 'File Handler',
+                                                            width: '1%',
+                                                            display: function (b) {
+                                                                return b.record.FileHandler.EmpName;
+                                                            }
+                                                        },
+
+                                                        Nature: {
+                                                            title: 'Nature',
+                                                            width: '1%',
+                                                            display: function (b) {
+                                                                return b.record.Nature.Name;
+                                                            }
+                                                        },
+                                                        ClientName: {
+                                                            title: 'Client',
+                                                            width: '1%',
+                                                            display: function (b) {
+                                                                return b.record.ClientName.Name;
+                                                            }
+                                                        },
+                                                        RequestDate: {
+                                                            title: 'Request Date',
+                                                            type: 'date',
+                                                            width: '2%',
+                                                            create: false,
+                                                            edit: false,
+                                                            display: function (data) {
+                                                                return moment(data.record.RequestDate).format('DD-MMM-YYYY')
+                                                            },
+                                                        },
+                                                        FileNumber: {
+                                                            title: 'FileNumber',
+                                                            width: '1%'
+                                                        },
+                                                        ContactName: {
+                                                            title: 'ContactName',
+                                                            width: '2%',
+                                                        },
+                                                        CheckinDate: {
+                                                            title: 'Check In',
+                                                            type: 'date',
+                                                            width: '3%',
+                                                            display: function (data) {
+                                                                return moment(data.record.CheckinDate).format('DD-MMM-YYYY')
+                                                            },
+                                                        },
+                                                        CheckOutDate: {
+                                                            title: 'Check Out',
+                                                            type: 'date',
+                                                            width: '3%',
+                                                            display: function (data) {
+                                                                return moment(data.record.CheckOutDate).format('DD-MMM-YYYY')
+                                                            },
+                                                        },
+                                                        StatusId: {
+                                                            title: 'Status',
+                                                            width: '2%',
+                                                            options: '@Url.Action("GetStatusOptions","EnquiryStatus")',
+                                                            display: function (data) {
+                                                                if (data.record.StatusId == 1)
+                                                                    return "<div class='proposal'>" + "PROPOSAL STAGE" + "</div>";
+                                                                if (data.record.StatusId == 2)
+                                                                    return "<div class='active'>" + 'ACTIVE' + "</div>";
+                                                                if (data.record.StatusId == 3)
+                                                                    return "<div class='active'>" + 'POTENTIAL' + "</div>";
+                                                                if (data.record.StatusId == 4)
+                                                                    return "<div class='confirmed'>" + 'CONFIRMED' + "</div>";
+                                                                if (data.record.StatusId == 5)
+                                                                    return "<div class='confirmed'>" + 'CONTRACTED' + "</div>";
+                                                                if (data.record.StatusId == 6)
+                                                                    return "<div class='confirmed'>" + 'OPERATED' + "</div>";
+                                                                if (data.record.StatusId == 7)
+                                                                    return "<div class='confirmed'>" + 'CLOSED' + "</div>";
+                                                                if (data.record.StatusId == 8)
+                                                                    return "<div class='cancelled'>" + 'INACTIVE' + "</div>";
+                                                                if (data.record.StatusId == 9)
+                                                                    return "<div class='cancelled'>" + 'CANCELLED' + "</div>";
+                                                            }
+                                                        },
+                                                        EventName: {
+                                                            title: 'EventName',
+                                                            width: '2%',
+                                                        },
+                                                        PaxNo: {
+                                                            title: 'No of Pax',
+                                                            width: '2%',
+                                                        },
+                                                        ContractValue: {
+                                                            title: 'Contract Value',
+                                                            width: '2%',
+                                                            display: function (data) {
+                                                                return '<div style="text-align:right">' + data.record.ContractValue.toFixed(0) + '</div>';
+                                                            }
+                                                        },
+                                                        ContractCost: {
+                                                            title: 'Contract Costs',
+                                                            width: '2%',
+                                                            display: function (data) {
+                                                                return '<div style="text-align:right">' + data.record.ContractCost.toFixed(0) + '</div>';
+                                                            }
+                                                        },
+                                                        Margin: {
+                                                            title: 'Margin',
+                                                            width: '0.5%',
+                                                            create: false,
+                                                            edit: false,
+                                                            display: function (data) {
+                                                                return '<div style="text-align:right">' + data.record.Margin.toFixed(0) + '</div>';
+                                                            }
+                                                        },
+                                                        MarginP: {
+                                                            title: 'Margin%',
+                                                            width: '1%',
+                                                            create: false,
+                                                            edit: false,
+                                                            display: function (data) {
+                                                                return '<div style="text-align:right">' + data.record.MarginP.toFixed(2) + '</div>';
+                                                            }
+                                                        },
+                                                        Remarks: {
+                                                            title: 'Remarks',
+                                                            width: '2%',
+                                                            type: 'textarea',
+                                                            list: false
+                                                        },
+
+                                                    },
+                                                    toolbar: {
+                                                        items: [{
+                                                            icon: '/Content/Images/excel.png',
+                                                            text: 'Export To Excel',
+                                                            click: function () {
+                                                                var r = confirm("Do you want to export?");
+                                                                if (r == true) {
+                                                                    var url = "NewAccount/ExportFiles";
+                                                                    window.open(url);
+                                                                }
+                                                            }
+                                                        }]
+                                                    },
+
+                                                }, function (data) {
+                                                    data.childTable.jtable('load');
+                                                });
+                                            });
+                                            return $img;
+                                        }
+                                      },
+
+                                  },
+                                  formCreated: function (event, data) {
+                                      data.form.find('input[name="FirstName"]').addClass('validate[required]');
+                                      data.form.find('input[name="City"]').addClass('validate[required]');
+                                      data.form.find('input[name="Email"]').addClass('validate[required,custom[email]]');
+                                      if (data.formType == 'create') {
+                                          var id = data.form.find('input[name="Accountid"]').val();
+                                      $.ajax({
+                                             type: 'POST',
+                                             datatype: 'JSON',
+                                             url: "@Url.Action("GetAccountAddress","AllContacts")",
+                                            data: { actid: id },
+                                            success: function (data) {
+                                            $.each(data.Result, function (i, item) {
+                                                $("#Edit-Street").val(item.Street);
+                                                $("#Edit-City").val(item.City);
+                                                $("#Edit-StateProvince").val(item.StateProvince);
+                                                $("#Edit-ZipPostalCode").val(item.ZipPostalCode);
+                                                $("#Edit-CountryId").val(item.Country.Id).attr("selected", "selected");;
+                                            });
+                                            },
+                                                error: function () {
+                                                }
+                                            });
+
+                                       
+                                    }
+                                      data.form.validationEngine();
+                                  },
+                                  formSubmitting: function (event, data) {
+                                      return data.form.validationEngine('validate');
+                                  },
+                                  formClosed: function (event, data) {
+                                      data.form.validationEngine('hide');
+                                      data.form.validationEngine('detach');
+                                  }
+
+                              }, function (data) {
+                                  data.childTable.jtable('load');
+                              });
+                          });
+                          return $img;
+                      }
+                },
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "NewAccount/ExportData";
+                            window.open(url);
+                        }
+                    }
+                },
+                {
+                    icon: '/Content/Images/import.png',
+                    text: 'Import',
+                    click: function () {
+                        var flage = '@User.IsInRole("Admin")';
+                        var man = '@User.IsInRole("Management")'
+                        if (flage == 'True' || man == 'True') {
+                            url = "NewAccount/Import";
+                            $("#dialog-edit2").dialog("option", "title", "Import Account - Select File");
+                            $("#dialog-edit2").dialog('open');
+                        } else {
+                            alert("Restricted Area, Please contact System Administrator");
+                        }
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="AccountName"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load', {
+            col: 'load'
+        });
+
+        $("#Country").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                countryid: $("#Country").val(), type: $('#type').val()
+            });
+        });
+
+        $("#type").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                countryid: $("#Country").val(), type: $('#type').val()
+            });
+        });
+
+        $("#account").change(function (e) {
+            e.preventDefault();
+            $('#table').jtable('load', {
+                accountid: $("#account").val()
+            });
+        });
+
+        $("#clear").click(function (e) {
+            $("#Country").val(0);
+            $('#type').val(0)
+            $('#name').val('')
+            e.preventDefault();
+            $('#table').jtable('load', {
+                col: 'load'
+            });
+        });
+
+        $('#name').bind('keyup', function (e) {
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val()
+                });
+            }
+        });
+
+        
+    });
+</script>

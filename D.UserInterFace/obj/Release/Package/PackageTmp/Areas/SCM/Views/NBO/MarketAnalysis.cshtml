@@ -1,0 +1,189 @@
+﻿@model  D.UserInterFace.Areas.SCM.Models.Report.AnayalisModel
+
+@{
+    ViewBag.Title = "Market Analysis";
+}
+
+
+<style type="text/css">
+   .th
+    {
+        text-align:center;
+        border:1px solid;
+        padding:4px;
+        color:#fff;
+        background-color:#a7a2a2;
+    }
+   .tb
+    {
+        text-align:right;
+        border:1px solid #000;
+        padding:2px;
+        color:#000000;
+    }
+    .tf
+    {
+        padding:4px;
+        border:1px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:center;
+    }
+
+    .footer
+    {
+        padding:4px;
+        border:1px solid #151414;
+        color:#fff;
+        background-color:#808080;
+        text-align:right;
+    }
+</style>
+@{
+    var currentC = from c in Model.CurrentNBO
+                   select new {Country= c.ClientCountry.Name};
+    var priviousC = from c in Model.PriviousNBO
+                    select new {Country= c.ClientCountry.Name};
+
+    var cont = currentC.Concat(priviousC).Distinct();
+                  
+    var details = from n in Model.CurrentNBO
+                  group n by n.ClientCountry.Name into s
+                  select new
+                  {
+                      Country = s.Key,
+                      //Active/Potantial
+                      ActiveValue = s.Where(x => x.Status.Id==2 || x.Status.Id==3).Sum(x=>x.ContractValue),
+                      ActiveFiles = s.Where(x => x.Status.Id == 2 || x.Status.Id == 3).Count(),
+                      //Cancelled /Inactive
+                      CancelledValue = s.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Sum(x => x.ContractValue),
+                      CancelledFiles = s.Where(x => x.Status.Id == 8 || x.Status.Id == 9).Count(),
+                      //Confirmed/Contracted/Operated/Closed
+                      ConfirmendValue = s.Where(x => x.Status.Id==4 ||x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Sum(x=>x.ContractValue),
+                      ConfirmendFiles = s.Where(x => x.Status.Id == 4 || x.Status.Id == 5 || x.Status.Id == 6 || x.Status.Id == 7).Count(),
+                      //ProposalStage
+                      ProposalStage = s.Where(x => x.Status.Id == 1).Sum(x => x.ContractValue),
+                      ProposalFiles = s.Where(x => x.Status.Id == 1).Count(),
+                      TotalFiles = s.Count(),
+                      TotalValue = s.Sum(x=>x.ContractValue),
+                  };
+                  
+    var privious =from n in Model.PriviousNBO
+                  group n by n.ClientCountry.Name into s
+                  select new
+                  {
+                      Country = s.Key,
+                      TotalFiles = s.Count(),
+                      TotalValue = s.Sum(x => x.ContractValue),
+                  };
+
+                  
+    var query = from c in cont
+                join m in details on c.Country equals m.Country into mb
+                join b in privious on c.Country equals b.Country into pv
+                from current in mb.DefaultIfEmpty()
+                from pri in pv.DefaultIfEmpty()
+                select new
+                {
+                    Country = c.Country,
+                    ActiveValue = current== null?0: current.ActiveValue,
+                    ActiveFiles = current== null?0: current.ActiveFiles,
+                    CancelledValue = current == null ? 0 : current.CancelledValue,
+                    CancelledFiles = current == null ? 0 : current.CancelledFiles,
+                    ConfirmendValue = current == null ? 0 : current.ConfirmendValue,
+                    ConfirmendFiles = current == null ? 0 : current.ConfirmendFiles,
+                    ProposalStage = current == null ? 0 : current.ProposalStage,
+                    ProposalFiles = current == null ? 0 : current.ProposalFiles,
+                    TotalFiles = current == null ? 0 : current.TotalFiles,
+                    TotalValue = current == null ? 0 : current.TotalValue,
+                    LastFiles = (pri == null ? 0 : pri.TotalFiles),
+                    LastValues = (pri == null ? 0 : pri.TotalValue)
+                };
+                       
+}
+
+<div id="div2">
+    <h3>Market Analysis - <a href='javascript:window.print()'> Print</a></h3>
+  <table>
+   <thead>
+       <tr>
+            <td rowspan="2" class="tf" style="width:100px;">Country</td>
+            <td colspan="2" class="th" style="background-color:#ff6a00;">Proposal Stage</td>
+            <td colspan="2" class="th" style="background-color:#ffd800">Active/Potantial</td>
+            <td colspan="2" class="th" style="background-color:#0aef2a">Confirmed / Contracted / Operated / Closed</td>
+            <td colspan="2" class="th" style="background-color:#7d0909;">Cancelled /InActive</td>
+            <td colspan="2" class="th" style="background-color:#9c076b;">Total</td>
+           <td colspan="3" class="th" style="background-color:#9c076b;">Total Last Year</td>
+           
+       </tr>
+       <tr>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            <td class="tf" style="width:30px;">No.</td>
+            <td class="tf" style="width:80px;">Value</td>
+            
+       </tr>
+
+   </thead>
+     
+    @foreach (var item in query.OrderBy(x => x.Country))
+    {
+        <tr>
+            <td class="tb" style="text-align:left;">@item.Country</td>
+            <td class="tb">@item.ProposalFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ProposalStage).ToString("##,##0")</td>
+            <td class="tb">@item.ActiveFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ActiveValue).ToString("##,##0")</td>
+            <td class="tb">@item.ConfirmendFiles</td>
+            <td class="tb">@Convert.ToDouble(item.ConfirmendValue).ToString("##,##0")</td>
+            <td class="tb">@item.CancelledFiles</td>
+            <td class="tb">@Convert.ToDouble(item.CancelledValue).ToString("##,##0")</td>
+            
+            <td class="tb">
+                @if (item.TotalFiles >= item.LastFiles){
+                    <div class="up">@item.TotalFiles</div>
+                }
+                else { 
+                    <div class="down">@item.TotalFiles</div>
+                }
+            </td>
+            <td class="tb">
+                
+                 @if (item.TotalValue >= item.LastValues)
+                 {
+                    <div class="up">@Convert.ToDouble(item.TotalValue).ToString("##,##0")</div>
+                }
+                else { 
+                    <div class="down">@Convert.ToDouble(item.TotalValue).ToString("##,##0")</div>
+                }
+            </td>
+            <td class="tb">@item.LastFiles</td>
+            <td class="tb">@Convert.ToDouble(item.LastValues).ToString("##,##0")</td>
+        </tr>
+    }
+      <tr>
+           <td class="tf">TOTAL</td>
+           <td class="footer">@query.Sum(x=>x.ProposalFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.ProposalStage)).ToString("##,##0")</td>
+           <td class="footer">@query.Sum(x=>x.ActiveFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.ActiveValue)).ToString("##,##0")</td>
+           <td class="footer">@query.Sum(x=>x.ConfirmendFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.ConfirmendValue)).ToString("##,##0")</td>
+           <td class="footer">@query.Sum(x=>x.CancelledFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.CancelledValue)).ToString("##,##0")</td>
+           <td class="footer">@query.Sum(x=>x.TotalFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.TotalValue)).ToString("##,##0")</td>
+          <td class="footer">@query.Sum(x=>x.LastFiles)</td>
+           <td class="footer">@Convert.ToDouble(query.Sum(x=>x.LastValues)).ToString("##,##0")</td>
+      </tr>
+</table>
+
+    </div>

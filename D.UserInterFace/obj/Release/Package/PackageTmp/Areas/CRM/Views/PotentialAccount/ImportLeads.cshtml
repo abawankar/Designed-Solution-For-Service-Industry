@@ -1,0 +1,87 @@
+﻿@{
+    ViewBag.Message = "Leads";
+}
+
+<div class="filtering">
+     @Html.ActionLink("Submit Data","ProcessImport","PotentialAccount")
+</div>
+
+<div id="table"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#table').jtable({
+            title: 'Leads',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("ImportLeadList")',
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width: '1%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                Type: {
+                    title: 'Type',
+                    width: '1%',
+                    options: { "Client": "Client", "Supplier": "Supplier" }
+                },
+                AccountName: {
+                    title: 'Account Name',
+                    width: '1%'
+                },
+                Industry: {
+                    title: 'Leads Category',
+                    width: '2%',
+                    display: function (e) {
+                        return e.record.Industry.Name;
+                    }
+                },
+                Website: {
+                    title: 'Website',
+                    width: '5%'
+                },
+                Description: {
+                    title: 'Description',
+                    width: '6%',
+                    type: 'textarea'
+                },
+                Phone: {
+                    title: 'Phone',
+                    width: '5%'
+                },
+                Street: {
+                    title: 'Street',
+                    width: '5%'
+                },
+                City: {
+                    title: 'City',
+                    width: '2%'
+                },
+                State: {
+                    title: 'State',
+                    width: '2%'
+                },
+                ZipPostalCode: {
+                    title: 'ZipPostalCode',
+                    width: '2%',
+                },
+                Country: {
+                    title: 'Country',
+                    width: '2%',
+                    display: function (e) {
+                        return e.record.Country.Name;
+                    }
+                },
+            },
+        });
+        $('#table').jtable('load');
+        
+    });
+</script>

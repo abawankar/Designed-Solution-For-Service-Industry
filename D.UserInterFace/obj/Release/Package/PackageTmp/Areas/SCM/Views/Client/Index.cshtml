@@ -1,0 +1,105 @@
+﻿@{
+    ViewBag.Title = "Client";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-info topmar-10">
+    <div class="panel-heading">
+        @Html.ActionLink("Dashboard", "Index", "Home") |
+        <input type="text" id="name" placeholder="Search" class="search-box" />
+        @Html.DropDownList("Country", new SelectList((ViewBag.Country) as SelectList, "Value", "Text"), "Country",new { @class = "search-box" })
+    </div>
+    <div class="panel-body">
+        <div id="table"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        
+        $('#table').jtable({
+            title: 'Client',
+            paging: true,
+            pagesize: 3,
+            actions: {
+                listAction: '@Url.Action("List")',
+                updateAction: '@Url.Action("Update")',
+                createAction: '@Url.Action("Create")'
+            },
+            fields: {
+                Id: {
+                    title: 'Id',
+                    width:'2%',
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: true
+                },
+                Name: {
+                    title: 'Name',
+                    width: '10%'
+                },
+                CountryId: {
+                    title: 'Country',
+                    width: '10%',
+                    options: '@Url.Action("GetCountryOptions","Country",new {area=string.Empty },null)'
+                },
+                ClientGroup: {
+                    title: 'Client Group',
+                    width: '10%'
+                },
+                Remarks: {
+                    title: 'Remarks',
+                    width: '40%',
+                    type:'textarea'
+                },
+                
+            },
+            toolbar: {
+                items: [{
+                    icon: '/Content/Images/excel.png',
+                    text: 'Export To Excel',
+                    click: function () {
+                        var r = confirm("Do you want to export?");
+                        if (r == true) {
+                            var url = "Client/ExportData";
+                            window.open(url);
+                        }
+                           
+                    }
+                }]
+            },
+            formCreated: function (event, data) {
+                data.form.find('input[name="Name"]').addClass('validate[required]');
+                data.form.validationEngine();
+            },
+            formSubmitting: function (event, data) {
+                return data.form.validationEngine('validate');
+            },
+            formClosed: function (event, data) {
+                data.form.validationEngine('hide');
+                data.form.validationEngine('detach');
+            }
+        });
+        $('#table').jtable('load');
+
+        $("#Country").change(function (e) {
+            $('#name').val('');
+            e.preventDefault();
+            $('#table').jtable('load', {
+                countryId: $("#Country").val(), col:"c"
+            });
+        });
+
+        $('#name').bind('keyup', function (e) {
+            $('#Country').val('');
+            if (e.which == 13) {
+                $('#table').jtable('load', {
+                    name: $('#name').val(),col:"n"
+                });
+            }
+
+        });
+   
+    });
+</script>
