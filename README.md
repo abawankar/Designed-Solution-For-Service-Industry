@@ -9,3 +9,4 @@
 # Activity & Time Management
 - Activity and Time Management Module is designed as a simple and effective tool for every one in the organization to plan their day to day activities with ease
 - The Module will work as a single gathering point of all tasks across the Company which in turn becomes an effective monitoring tool for Divisional Managers and Senior Management
+- Task can be assigned and communicated also through automated eamils. Automated daily tasks report can be genrated through the system
