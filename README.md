@@ -1,5 +1,5 @@
 # Sales & Contract Management
-- Sales and Contract Management Module is a simple and user friendly tool designed to provide wiith answers to all these challenging questions like
+- Sales and Contract Management Module is a simple and user friendly tool designed to provide with answers to all these challenging questions like
 -  1. Who are the top 10 producing Clients / Markets, 
 -  2. How does the Cash Flow Forecast look like for the next quarter, half year, Year?
 -  Have all Confirmed Businesses been Contracted?
